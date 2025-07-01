@@ -1,6 +1,6 @@
 import { BadRequestException, Controller, Get } from "@nestjs/common";
-import { CustomLogger } from "./utils/customer-logger";
 import { AppService } from "./app.service";
+import { CustomLogger } from "./utils/customer-logger";
 import { getErrorMessage, getErrorStack } from "./utils/functions";
 
 @Controller()

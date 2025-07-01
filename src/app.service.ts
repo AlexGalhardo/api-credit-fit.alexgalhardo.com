@@ -4,7 +4,7 @@ import { Injectable } from "@nestjs/common";
 export class AppService {
 	async index() {
 		return {
-			hello: 'world'
+			hello: "world",
 		};
 	}
 }

@@ -1,10 +1,11 @@
+import { randomUUID } from "node:crypto";
 import { NotFoundException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
+import { cnpj, cpf } from "cpf-cnpj-validator";
 import { RepositoryService } from "../../repository/repository.service";
+import { CompanyService } from "./company.service";
 import { CreateCompanyDto } from "./dto/create-company.dto";
 import { UpdateCompanyDto } from "./dto/update-company.dto";
-import { CompanyService } from "./company.service";
-import { randomUUID } from "node:crypto";
 
 describe("CompanyService", () => {
 	let service: CompanyService;
@@ -15,11 +16,13 @@ describe("CompanyService", () => {
 		legalName: "Green Valley Ltda",
 		name: "Green Valley",
 		email: "contact@greenvalley.com",
-		cpf: "123.456.789-00",
-		cnpj: "12.345.678/0001-90",
+		cpf: cpf.generate(),
+		cnpj: cnpj.generate(),
 		createdAt: new Date(),
 		updatedAt: new Date(),
 		deletedAt: null,
+		employers: [],
+		proposals: [],
 	};
 
 	beforeEach(async () => {
@@ -32,6 +35,7 @@ describe("CompanyService", () => {
 						company: {
 							create: jest.fn(),
 							findMany: jest.fn(),
+							findFirst: jest.fn(),
 							findUnique: jest.fn(),
 							update: jest.fn(),
 							delete: jest.fn(),
@@ -44,8 +48,11 @@ describe("CompanyService", () => {
 		service = module.get<CompanyService>(CompanyService);
 		prisma = module.get(RepositoryService);
 
+		jest.clearAllMocks();
+
 		(prisma.company.create as jest.Mock).mockResolvedValue(mockCompany);
 		(prisma.company.findMany as jest.Mock).mockResolvedValue([mockCompany]);
+		(prisma.company.findFirst as jest.Mock).mockResolvedValue(mockCompany);
 		(prisma.company.findUnique as jest.Mock).mockResolvedValue(mockCompany);
 		(prisma.company.update as jest.Mock).mockResolvedValue(mockCompany);
 		(prisma.company.delete as jest.Mock).mockResolvedValue(mockCompany);
@@ -57,8 +64,8 @@ describe("CompanyService", () => {
 				legalName: "Green Valley Ltda",
 				name: "Green Valley",
 				email: "contact@greenvalley.com",
-				cpf: "123.456.789-00",
-				cnpj: "12.345.678/0001-90",
+				cpf: cpf.generate(),
+				cnpj: cnpj.generate(),
 			};
 
 			const result = await service.create(dto);
@@ -74,13 +81,10 @@ describe("CompanyService", () => {
 
 			expect(result).toEqual([mockCompany]);
 			expect(prisma.company.findMany).toHaveBeenCalledWith({
+				where: { deletedAt: null },
 				include: {
-					producer: true,
-					harvests: {
-						include: {
-							crops: true,
-						},
-					},
+					employers: true,
+					proposals: true,
 				},
 			});
 		});
@@ -91,13 +95,17 @@ describe("CompanyService", () => {
 			const result = await service.findOne("company-uuid");
 
 			expect(result).toEqual(mockCompany);
-			expect(prisma.company.findUnique).toHaveBeenCalledWith({
-				where: { id: "company-uuid" },
+			expect(prisma.company.findFirst).toHaveBeenCalledWith({
+				where: { id: "company-uuid", deletedAt: null },
+				include: {
+					employers: true,
+					proposals: true,
+				},
 			});
 		});
 
 		it("should throw NotFoundException if company not found", async () => {
-			(prisma.company.findUnique as jest.Mock).mockResolvedValueOnce(null);
+			(prisma.company.findFirst as jest.Mock).mockResolvedValueOnce(null);
 
 			await expect(service.findOne("invalid-id")).rejects.toThrow(NotFoundException);
 		});
@@ -122,15 +130,29 @@ describe("CompanyService", () => {
 				data: dto,
 			});
 		});
+
+		it("should throw NotFoundException if company not found during update", async () => {
+			const dto: UpdateCompanyDto = {
+				name: "Updated Company",
+			};
+
+			(prisma.company.update as jest.Mock).mockRejectedValueOnce(new Error("Record to update not found"));
+
+			await expect(service.update("invalid-id", dto)).rejects.toThrow();
+		});
 	});
 
 	describe("remove", () => {
-		it("should delete a company by ID", async () => {
+		it("should soft delete a company by ID", async () => {
+			const deletedCompany = { ...mockCompany, deletedAt: new Date() };
+			(prisma.company.update as jest.Mock).mockResolvedValueOnce(deletedCompany);
+
 			const result = await service.remove("company-uuid");
 
-			expect(result).toEqual(mockCompany);
-			expect(prisma.company.delete).toHaveBeenCalledWith({
+			expect(result).toEqual(deletedCompany);
+			expect(prisma.company.update).toHaveBeenCalledWith({
 				where: { id: "company-uuid" },
+				data: { deletedAt: expect.any(Date) },
 			});
 		});
 	});

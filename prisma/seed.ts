@@ -71,7 +71,7 @@ async function createSeedData() {
 				cpf: cpf.generate(),
 				salary: faker.number.int({ min: 1200, max: 10000 }),
 				currentlyEmployed: true,
-				companyId: company?.id ?? null,
+				companyCnpj: company?.cnpj ?? null,
 			},
 		});
 

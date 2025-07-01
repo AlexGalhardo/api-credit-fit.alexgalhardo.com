@@ -1,5 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsEmail, IsNumber, IsOptional, IsString, IsUUID } from "class-validator";
+import { IsBoolean, IsEmail, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsCnpj } from "../../../utils/isCnpj";
+import { IsCpf } from "../../../utils/isCpf";
 
 export class CreateEmployeeDto {
 	@ApiProperty({
@@ -21,6 +23,7 @@ export class CreateEmployeeDto {
 		description: "CPF of the employee",
 	})
 	@IsString()
+	@IsCpf({ message: "CPF inválido" })
 	cpf: string;
 
 	@ApiProperty({
@@ -32,8 +35,7 @@ export class CreateEmployeeDto {
 
 	@ApiProperty({
 		example: true,
-		description: "Whether the employee is currently employed",
-		default: false,
+		description: "Whether the employee is currently employed (default false if no companyCnpj)",
 		required: false,
 	})
 	@IsOptional()
@@ -41,11 +43,12 @@ export class CreateEmployeeDto {
 	currentlyEmployed?: boolean;
 
 	@ApiProperty({
-		example: "a857c5db-7f67-4cf0-9c7c-2b3f9c7e4a4b",
-		description: "Optional company ID the employee is associated with",
+		example: "12.345.678/0001-90",
+		description: "Optional CNPJ of the company the employee is associated with",
 		required: false,
 	})
 	@IsOptional()
-	@IsUUID()
-	companyId?: string;
+	@IsString()
+	@IsCnpj({ message: "CNPJ inválido" })
+	companyCnpj?: string;
 }

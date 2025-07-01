@@ -1,8 +1,8 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { CreateCompanyDto } from "./dto/create-company.dto";
-import { UpdateCompanyDto } from "./dto/update-company.dto";
 import { CompanyController } from "./company.controller";
 import { CompanyService } from "./company.service";
+import { CreateCompanyDto } from "./dto/create-company.dto";
+import { UpdateCompanyDto } from "./dto/update-company.dto";
 
 describe("CompanyController", () => {
 	let controller: CompanyController;
@@ -35,8 +35,8 @@ describe("CompanyController", () => {
 				name: "Green Valley",
 				email: "contact@greenvalley.com",
 				cpf: "123.456.789-00",
-				cnpj: "12.345.678/0001-90"
-			  };
+				cnpj: "12.345.678/0001-90",
+			};
 			const createdCompany = { id: "company-1", ...dto };
 
 			mockCompanyService.create.mockResolvedValue(createdCompany);

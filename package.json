@@ -1,24 +1,24 @@
 {
   "name": "farm-nestjs-api",
   "scripts": {
-    "build": "npx nest build",
-    "format:prettier": "npx prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "npx nest start",
-    "dev": "npx nest start --watch",
-    "start:debug": "npx nest start --debug --watch",
+    "build": "bunx nest build",
+    "format:prettier": "bunx prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "bunx nest start",
+    "dev": "bunx nest start --watch",
+    "start:debug": "bunx nest start --debug --watch",
     "start:prod": "node dist/main",
     "test": "jest",
-    "test:watch": "npx jest --watch",
-    "test:cov": "npx jest --coverage",
+    "test:watch": "bunx jest --watch",
+    "test:cov": "bunx jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "npx jest --config ./test/jest-e2e.json",
+    "test:e2e": "bunx jest --config ./test/jest-e2e.json",
     "lint": "biome check src/ --fix --unsafe",
-    "format": "biome format src/ prisma/ --fix",
-    "prepare": "npx husky",
-    "prisma:generate": "npx prisma generate",
-    "prisma:migrate": "npx prisma migrate dev",
-    "prisma:studio": "npx prisma studio",
-    "prisma:db:seed": "npx prisma db seed"
+    "format": "biome format src/ prisma/ test/ --fix",
+    "husky": "bunx husky",
+    "prisma:generate": "bunx prisma generate",
+    "prisma:migrate": "bunx prisma migrate dev",
+    "prisma:studio": "bunx prisma studio",
+    "prisma:db:seed": "bunx prisma db seed"
   },
   "prisma": {
     "seed": "ts-node --transpile-only --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"

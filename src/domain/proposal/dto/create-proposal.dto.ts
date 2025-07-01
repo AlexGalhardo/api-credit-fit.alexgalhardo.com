@@ -1,5 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsString } from "class-validator";
+import { IsCnpj } from "../../../utils/isCnpj";
+import { IsCpf } from "../../../utils/isCpf";
 
 export class CreateProposalDto {
 	@ApiProperty({
@@ -7,6 +9,7 @@ export class CreateProposalDto {
 		description: "CNPJ of the company requesting the loan",
 	})
 	@IsString()
+	@IsCnpj({ message: "CNPJ inválido" })
 	companyCnpj: string;
 
 	@ApiProperty({
@@ -14,7 +17,8 @@ export class CreateProposalDto {
 		description: "CPF of the employee receiving the loan",
 	})
 	@IsString()
-	employerCpf: string;
+	@IsCpf({ message: "CPF inválido" })
+	employeeCpf: string;
 
 	@ApiProperty({
 		example: "100000",

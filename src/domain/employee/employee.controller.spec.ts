@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { Test, TestingModule } from "@nestjs/testing";
+import { cnpj, cpf } from "cpf-cnpj-validator";
 import { CreateEmployeeDto } from "./dto/create-employee.dto";
 import { UpdateEmployeeDto } from "./dto/update-employee.dto";
 import { EmployeeController } from "./employee.controller";
@@ -31,10 +32,10 @@ describe("EmployeeController", () => {
 		const dto: CreateEmployeeDto = {
 			fullName: "João Silva",
 			email: "joao.silva@example.com",
-			cpf: "12345678900",
-			salary: 3000,
+			cpf: cpf.generate(),
+			salary: 300000,
 			currentlyEmployed: true,
-			companyId: randomUUID(),
+			companyCnpj: cnpj.generate(),
 		};
 		const createdEmployee = { id: randomUUID(), ...dto };
 
@@ -52,10 +53,10 @@ describe("EmployeeController", () => {
 				id: randomUUID(),
 				fullName: "Maria Souza",
 				email: "maria.souza@example.com",
-				cpf: "98765432100",
-				salary: 4000,
+				cpf: cpf.generate(),
+				salary: 400000,
 				currentlyEmployed: true,
-				companyId: randomUUID(),
+				companyCnpj: cnpj.generate(),
 			},
 		];
 		mockEmployeeService.findAll.mockResolvedValue(employees);
@@ -71,10 +72,10 @@ describe("EmployeeController", () => {
 			id: "employee-uuid-1",
 			fullName: "Carlos Pereira",
 			email: "carlos.pereira@example.com",
-			cpf: "12312312399",
-			salary: 3500,
+			cpf: cpf.generate(),
+			salary: 350000,
 			currentlyEmployed: false,
-			companyId: randomUUID(),
+			companyCnpj: cnpj.generate(),
 		};
 		mockEmployeeService.findOne.mockResolvedValue(employee);
 
@@ -90,10 +91,10 @@ describe("EmployeeController", () => {
 			id: "employee-uuid-1",
 			fullName: "Carlos P.",
 			email: "carlos.pereira@example.com",
-			cpf: "12312312399",
-			salary: 3500,
+			cpf: cpf.generate(),
+			salary: 350000,
 			currentlyEmployed: false,
-			companyId: randomUUID(),
+			companyCnpj: cnpj.generate(),
 		};
 
 		mockEmployeeService.update.mockResolvedValue(updatedEmployee);
@@ -109,10 +110,10 @@ describe("EmployeeController", () => {
 			id: "employee-uuid-1",
 			fullName: "To Be Deleted",
 			email: "tobedeleted@example.com",
-			cpf: "00000000000",
-			salary: 0,
+			cpf: cpf.generate(),
+			salary: 100000,
 			currentlyEmployed: false,
-			companyId: randomUUID(),
+			companyCnpj: cnpj.generate(),
 		};
 		mockEmployeeService.remove.mockResolvedValue(deletedEmployee);
 

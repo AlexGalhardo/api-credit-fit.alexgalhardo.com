@@ -1,17 +1,21 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { ZodError } from "zod";
+import { Prisma } from "@prisma/client";
+import { addDays } from "date-fns";
 import { RepositoryService } from "../../repository/repository.service";
+import { CreateProposalDto } from "./dto/create-proposal.dto";
 import { createProposalSchema } from "./schema/create-proposal.schema";
 
 @Injectable()
 export class ProposalService {
 	constructor(private readonly repository: RepositoryService) {}
 
-	async create(dto: any) {
+	async create(dto: CreateProposalDto) {
 		try {
 			const data = createProposalSchema.parse(dto);
 
-			const company = await this.repository.company.findFirst({
+			console.log("create proposal data -> ", data);
+
+			const company = await this.repository.company.findUnique({
 				where: {
 					cnpj: data.companyCnpj,
 					deletedAt: null,
@@ -22,9 +26,9 @@ export class ProposalService {
 				throw new NotFoundException("Company not found with this CNPJ");
 			}
 
-			const employee = await this.repository.employee.findFirst({
+			const employee = await this.repository.employee.findUnique({
 				where: {
-					cpf: data.employerCpf,
+					cpf: data.employeeCpf,
 					deletedAt: null,
 				},
 			});
@@ -39,7 +43,7 @@ export class ProposalService {
 					totalLoanAmount: data.totalLoanAmount,
 					numberOfInstallments: data.numberOfInstallments,
 					installmentAmount: Math.floor(data.totalLoanAmount / data.numberOfInstallments),
-					firstDueDate: new Date(),
+					firstDueDate: addDays(new Date(), 30),
 					installmentsPaid: 0,
 					companyName: company.name,
 					employerEmail: employee.email,
@@ -47,16 +51,22 @@ export class ProposalService {
 			});
 
 			return proposal;
-		} catch (err: unknown) {
-			if (err instanceof ZodError) {
-				throw new BadRequestException(
-					err.errors.map((e) => ({
-						path: e.path.join("."),
-						message: e.message,
-					})),
-				);
+		} catch (error: any) {
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+				if (error.code === "P2002") {
+					const fields = (error.meta?.target as string[]) || [];
+					const messages = fields.map((field) => `${field} already registered`);
+					throw new BadRequestException({
+						success: false,
+						message: messages.join(", "),
+					});
+				}
 			}
-			throw err;
+
+			throw new BadRequestException({
+				success: false,
+				message: error?.message ?? "Unexpected error while creating proposal",
+			});
 		}
 	}
 

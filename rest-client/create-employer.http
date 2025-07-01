@@ -1,9 +1,10 @@
-POST http://localhost:3000/employee
+POST http://localhost:3000/employees
 content-type: application/json
 
 {
-	"fullName": "80f481c5-c52c-4c11-abe8-f2e777335924",
-	"cpf": "Fazendinha 2",
-	"email": "Araçatuba",
-	"salary": "São Paulo"
+	"fullName": "Teste",
+	"cpf": "17452475135",
+	"email": "teste@gmail.com",
+	"salary": 1000000,
+	"companyCnpj": "25723212706144"
 }

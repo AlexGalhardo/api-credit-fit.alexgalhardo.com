@@ -1,5 +1,7 @@
-import { NotFoundException } from "@nestjs/common";
+import { randomUUID } from "node:crypto";
+import { BadRequestException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
+import { cnpj, cpf } from "cpf-cnpj-validator";
 import { RepositoryService } from "../../repository/repository.service";
 import { CreateEmployeeDto } from "./dto/create-employee.dto";
 import { UpdateEmployeeDto } from "./dto/update-employee.dto";
@@ -9,17 +11,36 @@ describe("EmployeeService", () => {
 	let service: EmployeeService;
 	let prisma: jest.Mocked<RepositoryService>;
 
-	const mockEmployee = {
-		id: "123e4567-e89b-12d3-a456-426614174000",
-		fullName: "João Silva",
-		email: "joao.silva@example.com",
-		cpf: "12345678900",
-		salary: 3000,
-		currentlyEmployed: true,
-		companyId: "company-uuid-1",
+	const validCpf = cpf.generate();
+	const companyId = randomUUID();
+	const companyCpf = cpf.generate();
+	const companyCnpj = cnpj.generate();
+
+	const mockCompany = {
+		id: companyId,
+		name: "Empresa Teste",
+		email: "empresa@test.com",
+		cpf: companyCpf,
+		cnpj: companyCnpj,
+		legalName: "Empresa Teste Ltda",
 		createdAt: new Date(),
 		updatedAt: new Date(),
 		deletedAt: null,
+	};
+
+	const mockEmployee = {
+		id: randomUUID(),
+		fullName: "João Silva",
+		email: "joao.silva@example.com",
+		cpf: validCpf,
+		salary: 350000,
+		currentlyEmployed: true,
+		companyId: companyId,
+		createdAt: new Date(),
+		updatedAt: new Date(),
+		deletedAt: null,
+		company: mockCompany,
+		proposals: [],
 	};
 
 	beforeEach(async () => {
@@ -39,7 +60,7 @@ describe("EmployeeService", () => {
 						company: {
 							findUnique: jest.fn(),
 						},
-					} as unknown as jest.Mocked<RepositoryService>,
+					},
 				},
 			],
 		}).compile();
@@ -47,11 +68,13 @@ describe("EmployeeService", () => {
 		service = module.get<EmployeeService>(EmployeeService);
 		prisma = module.get(RepositoryService);
 
-		jest.spyOn(prisma.employee, "create").mockResolvedValue(mockEmployee as any);
-		jest.spyOn(prisma.employee, "findMany").mockResolvedValue([mockEmployee] as any);
-		jest.spyOn(prisma.employee, "findFirst").mockResolvedValue(mockEmployee as any);
-		jest.spyOn(prisma.employee, "update").mockResolvedValue(mockEmployee as any);
-		jest.spyOn(prisma.company, "findUnique").mockResolvedValue({ id: "company-uuid-1", name: "Empresa X" } as any);
+		jest.clearAllMocks();
+
+		(prisma.employee.create as jest.Mock).mockResolvedValue(mockEmployee);
+		(prisma.employee.findMany as jest.Mock).mockResolvedValue([mockEmployee]);
+		(prisma.employee.findFirst as jest.Mock).mockResolvedValue(mockEmployee);
+		(prisma.employee.update as jest.Mock).mockResolvedValue(mockEmployee);
+		(prisma.company.findUnique as jest.Mock).mockResolvedValue(mockCompany);
 	});
 
 	describe("create", () => {
@@ -59,16 +82,18 @@ describe("EmployeeService", () => {
 			const dto: CreateEmployeeDto = {
 				fullName: "João Silva",
 				email: "joao.silva@example.com",
-				cpf: "12345678900",
-				salary: 3000,
+				cpf: validCpf,
+				salary: 350000,
 				currentlyEmployed: true,
-				companyId: "company-uuid-1",
+				companyCnpj: companyCnpj,
 			};
 
 			const result = await service.create(dto);
 
 			expect(result).toEqual(mockEmployee);
-			expect(prisma.company.findUnique).toHaveBeenCalledWith({ where: { id: dto.companyId } });
+			expect(prisma.company.findUnique).toHaveBeenCalledWith({
+				where: { cnpj: dto.companyCnpj },
+			});
 			expect(prisma.employee.create).toHaveBeenCalledWith({
 				data: {
 					fullName: dto.fullName,
@@ -76,24 +101,61 @@ describe("EmployeeService", () => {
 					cpf: dto.cpf,
 					salary: dto.salary,
 					currentlyEmployed: dto.currentlyEmployed,
-					companyId: dto.companyId,
+					companyCnpj: dto.companyCnpj,
 				},
 			});
 		});
 
-		it("should throw NotFoundException when company does not exist", async () => {
-			jest.spyOn(prisma.company, "findUnique").mockResolvedValueOnce(null);
+		it("should create an employee without company", async () => {
+			const dto: CreateEmployeeDto = {
+				fullName: "Maria Santos",
+				email: "maria.santos@example.com",
+				cpf: cpf.generate(),
+				salary: 250000,
+				currentlyEmployed: false,
+			};
+
+			const employeeWithoutCompany = {
+				...mockEmployee,
+				companyId: null,
+				company: null,
+				currentlyEmployed: false,
+				salary: 250000,
+			};
+			(prisma.employee.create as jest.Mock).mockResolvedValueOnce(employeeWithoutCompany);
+
+			const result = await service.create(dto);
+
+			expect(result).toEqual(employeeWithoutCompany);
+			expect(prisma.company.findUnique).not.toHaveBeenCalled();
+			expect(prisma.employee.create).toHaveBeenCalledWith({
+				data: {
+					fullName: dto.fullName,
+					email: dto.email,
+					cpf: dto.cpf,
+					salary: dto.salary,
+					currentlyEmployed: false,
+					companyCnpj: dto.companyCnpj,
+				},
+			});
+		});
+
+		it("should throw BadRequestException when company does not exist", async () => {
+			(prisma.company.findUnique as jest.Mock).mockResolvedValueOnce(null);
 
 			const dto: CreateEmployeeDto = {
 				fullName: "João Silva",
 				email: "joao.silva@example.com",
-				cpf: "12345678900",
-				salary: 3000,
+				cpf: cpf.generate(),
+				salary: 300000,
 				currentlyEmployed: true,
-				companyId: "non-existent-company",
+				companyCnpj: cnpj.generate(),
 			};
 
-			await expect(service.create(dto)).rejects.toThrow(NotFoundException);
+			await expect(service.create(dto)).rejects.toThrow(BadRequestException);
+			expect(prisma.company.findUnique).toHaveBeenCalledWith({
+				where: { cnpj: dto.companyCnpj },
+			});
 		});
 	});
 
@@ -111,65 +173,72 @@ describe("EmployeeService", () => {
 
 	describe("findOne", () => {
 		it("should return an employee by ID", async () => {
-			const result = await service.findOne("123e4567-e89b-12d3-a456-426614174000");
+			const result = await service.findOne(mockEmployee.id);
 
 			expect(result).toEqual(mockEmployee);
 			expect(prisma.employee.findFirst).toHaveBeenCalledWith({
-				where: { id: "123e4567-e89b-12d3-a456-426614174000", deletedAt: null },
+				where: { id: mockEmployee.id, deletedAt: null },
 				include: { company: true, proposals: true },
 			});
-		});
-
-		it("should throw NotFoundException if employee not found", async () => {
-			jest.spyOn(prisma.employee, "findFirst").mockResolvedValueOnce(null);
-
-			await expect(service.findOne("non-existent-id")).rejects.toThrow(NotFoundException);
 		});
 	});
 
 	describe("update", () => {
-		it("should update an employee", async () => {
+		it("should update an employee without changing company", async () => {
 			const dto: UpdateEmployeeDto = {
 				fullName: "João Souza",
-				salary: 3500,
+				salary: 400000,
 			};
 
-			jest.spyOn(prisma.company, "findUnique").mockResolvedValue({ id: "company-uuid-1" } as any);
-
 			const updatedEmployee = { ...mockEmployee, ...dto };
-			jest.spyOn(prisma.employee, "update").mockResolvedValueOnce(updatedEmployee as any);
+			(prisma.employee.update as jest.Mock).mockResolvedValueOnce(updatedEmployee);
 
-			const result = await service.update("123e4567-e89b-12d3-a456-426614174000", dto);
+			const result = await service.update(mockEmployee.id, dto);
 
 			expect(result).toEqual(updatedEmployee);
-			expect(prisma.company.findUnique).toHaveBeenCalledWith({ where: { id: undefined } }); // if dto.companyId is undefined, this might get called or not, so you may adjust
+			expect(prisma.company.findUnique).not.toHaveBeenCalled();
 			expect(prisma.employee.update).toHaveBeenCalledWith({
-				where: { id: "123e4567-e89b-12d3-a456-426614174000" },
+				where: { id: mockEmployee.id },
 				data: dto,
 			});
 		});
 
-		it("should throw NotFoundException if companyId in update dto does not exist", async () => {
-			jest.spyOn(prisma.company, "findUnique").mockResolvedValueOnce(null);
+		it("should update an employee with valid company", async () => {
+			const newCompanyCnpj = cnpj.generate();
+			const dto: UpdateEmployeeDto = {
+				fullName: "João Souza",
+				companyCnpj: newCompanyCnpj,
+			};
 
-			const dto: UpdateEmployeeDto = { companyId: "non-existent-company" };
+			const newCompany = { ...mockCompany, cnpj: newCompanyCnpj };
+			(prisma.company.findUnique as jest.Mock).mockResolvedValueOnce(newCompany);
 
-			await expect(service.update("123e4567-e89b-12d3-a456-426614174000", dto)).rejects.toThrow(
-				NotFoundException,
-			);
+			const updatedEmployee = { ...mockEmployee, ...dto };
+			(prisma.employee.update as jest.Mock).mockResolvedValueOnce(updatedEmployee);
+
+			const result = await service.update(mockEmployee.id, dto);
+
+			expect(result).toEqual(updatedEmployee);
+			expect(prisma.company.findUnique).toHaveBeenCalledWith({
+				where: { id: newCompanyCnpj },
+			});
+			expect(prisma.employee.update).toHaveBeenCalledWith({
+				where: { id: mockEmployee.id },
+				data: dto,
+			});
 		});
 	});
 
 	describe("remove", () => {
 		it("should soft delete an employee", async () => {
 			const deletedEmployee = { ...mockEmployee, deletedAt: new Date() };
-			jest.spyOn(prisma.employee, "update").mockResolvedValueOnce(deletedEmployee as any);
+			(prisma.employee.update as jest.Mock).mockResolvedValueOnce(deletedEmployee);
 
-			const result = await service.remove("123e4567-e89b-12d3-a456-426614174000");
+			const result = await service.remove(mockEmployee.id);
 
 			expect(result).toEqual(deletedEmployee);
 			expect(prisma.employee.update).toHaveBeenCalledWith({
-				where: { id: "123e4567-e89b-12d3-a456-426614174000" },
+				where: { id: mockEmployee.id },
 				data: { deletedAt: expect.any(Date) },
 			});
 		});

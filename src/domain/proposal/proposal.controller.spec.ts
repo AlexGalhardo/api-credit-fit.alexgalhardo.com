@@ -30,7 +30,7 @@ describe("ProposalController", () => {
 		it("should create a proposal and return success response", async () => {
 			const dto = {
 				companyCnpj: "12.345.678/0001-00",
-				employerCpf: "123.456.789-00",
+				employeeCpf: "123.456.789-00",
 				totalLoanAmount: "100000",
 				numberOfInstallments: "2",
 			};

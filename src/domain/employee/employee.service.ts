@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
 import { RepositoryService } from "../../repository/repository.service";
 import { CreateEmployeeDto } from "./dto/create-employee.dto";
 import { UpdateEmployeeDto } from "./dto/update-employee.dto";
@@ -10,29 +11,49 @@ export class EmployeeService {
 	constructor(private readonly repository: RepositoryService) {}
 
 	async create(dto: CreateEmployeeDto) {
-		const data = createEmployeeSchema.parse(dto);
+		try {
+			const data = createEmployeeSchema.parse(dto);
 
-		if (data.companyId) {
-			const companyExists = await this.repository.company.findUnique({
-				where: { id: data.companyId },
-			});
-			if (!companyExists) {
-				throw new NotFoundException("Company not found.");
+			if (data.companyCnpj) {
+				const companyExists = await this.repository.company.findUnique({
+					where: { cnpj: data.companyCnpj },
+				});
+				if (!companyExists) {
+					throw new NotFoundException("Company not found.");
+				}
+			} else {
+				data.currentlyEmployed = false;
 			}
+
+			const employee = await this.repository.employee.create({
+				data: {
+					fullName: data.fullName,
+					email: data.email,
+					cpf: data.cpf,
+					salary: data.salary,
+					currentlyEmployed: data.currentlyEmployed,
+					companyCnpj: data.companyCnpj,
+				},
+			});
+
+			return employee;
+		} catch (error: any) {
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+				if (error.code === "P2002") {
+					const fields = (error.meta?.target as string[]) || [];
+					const messages = fields.map((field) => `${field} already registered`);
+					throw new BadRequestException({
+						success: false,
+						message: messages.join(", "),
+					});
+				}
+			}
+
+			throw new BadRequestException({
+				success: false,
+				message: error?.message ?? "Unexpected error while creating employee",
+			});
 		}
-
-		const employee = await this.repository.employee.create({
-			data: {
-				fullName: data.fullName,
-				email: data.email,
-				cpf: data.cpf,
-				salary: data.salary,
-				currentlyEmployed: data.currentlyEmployed ?? false,
-				companyId: data.companyId ?? null,
-			},
-		});
-
-		return employee;
 	}
 
 	async findAll() {
@@ -66,9 +87,9 @@ export class EmployeeService {
 	async update(id: string, dto: UpdateEmployeeDto) {
 		const data = updateEmployeeSchema.parse(dto);
 
-		if (data.companyId) {
+		if (data.companyCnpj) {
 			const companyExists = await this.repository.company.findUnique({
-				where: { id: data.companyId },
+				where: { id: data.companyCnpj },
 			});
 			if (!companyExists) {
 				throw new NotFoundException("Company not found.");

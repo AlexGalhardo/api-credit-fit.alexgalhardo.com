@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
 import { RepositoryService } from "../../repository/repository.service";
 import { CreateCompanyDto } from "./dto/create-company.dto";
 import { UpdateCompanyDto } from "./dto/update-company.dto";
 import { createCompanySchema } from "./schema/create-company.schema";
 import { updateCompanySchema } from "./schema/update-company.schema";
-import { ZodError } from "zod";
 
 @Injectable()
 export class CompanyService {
@@ -13,17 +13,23 @@ export class CompanyService {
 	async create(dto: CreateCompanyDto) {
 		try {
 			const parsed = createCompanySchema.parse(dto);
-			return await this.repository.company.create({ data: parsed});
-		} catch (err: unknown) {
-			if (err instanceof ZodError) {
-				throw new BadRequestException(
-					err.errors.map((e) => ({
-						path: e.path.join("."),
-						message: e.message,
-					})),
-				);
+			return await this.repository.company.create({ data: parsed });
+		} catch (error: any) {
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+				if (error.code === "P2002") {
+					const fields = (error.meta?.target as string[]) || [];
+					const messages = fields.map((field) => `${field} already registered`);
+					throw new BadRequestException({
+						success: false,
+						message: messages.join(", "),
+					});
+				}
 			}
-			throw err;
+
+			throw new BadRequestException({
+				success: false,
+				message: error?.message,
+			});
 		}
 	}
 
@@ -59,8 +65,8 @@ export class CompanyService {
 			cnpj: parsed.cnpj || undefined,
 		};
 
-		if (!data.cpf) delete data.cpf;
-		if (!data.cnpj) delete data.cnpj;
+		if (!data.cpf) data.cpf = undefined;
+		if (!data.cnpj) data.cnpj = undefined;
 
 		return await this.repository.company.update({
 			where: { id },

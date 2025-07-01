@@ -6,7 +6,7 @@ export const createProposalSchema = z.object({
 		.string()
 		.min(1, { message: "CNPJ is required" })
 		.refine((value) => cnpj.isValid(value), { message: "Invalid CNPJ" }),
-	employerCpf: z
+	employeeCpf: z
 		.string()
 		.min(1, { message: "CPF is required" })
 		.refine((value) => cpf.isValid(value), { message: "Invalid CPF" }),

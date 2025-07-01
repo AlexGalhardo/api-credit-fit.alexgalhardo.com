@@ -1,9 +1,9 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put } from "@nestjs/common";
 import { CustomLogger } from "../../utils/customer-logger";
 import { getErrorMessage, getErrorStack } from "../../utils/functions";
+import { CompanyService } from "./company.service";
 import { CreateCompanyDto } from "./dto/create-company.dto";
 import { UpdateCompanyDto } from "./dto/update-company.dto";
-import { CompanyService } from "./company.service";
 
 @Controller("companies")
 export class CompanyController {

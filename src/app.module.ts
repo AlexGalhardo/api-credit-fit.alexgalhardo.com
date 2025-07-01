@@ -2,15 +2,15 @@ import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { APP_GUARD } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
-import { CompanyController } from "./domain/company/company.controller";
-import { EmployeeController } from "./domain/employee/employee.controller";
-import { ProposalController } from "./domain/proposal/proposal.controller";
 import { AppController } from "./app.controller";
-import { RepositoryModule } from "./repository/repository.module";
 import { AppService } from "./app.service";
+import { CompanyController } from "./domain/company/company.controller";
 import { CompanyService } from "./domain/company/company.service";
+import { EmployeeController } from "./domain/employee/employee.controller";
 import { EmployeeService } from "./domain/employee/employee.service";
+import { ProposalController } from "./domain/proposal/proposal.controller";
 import { ProposalService } from "./domain/proposal/proposal.service";
+import { RepositoryModule } from "./repository/repository.module";
 
 @Module({
 	imports: [

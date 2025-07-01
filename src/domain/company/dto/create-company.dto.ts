@@ -1,5 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsString, Length, Matches } from "class-validator";
+import { IsEmail, IsString, Length } from "class-validator";
+import { IsCnpj } from "../../../utils/isCnpj";
+import { IsCpf } from "../../../utils/isCpf";
 
 export class CreateCompanyDto {
 	@ApiProperty({
@@ -30,7 +32,7 @@ export class CreateCompanyDto {
 		description: "The company's CPF number (if individual)",
 	})
 	@IsString()
-	@Matches(/^\d{3}\.\d{3}\.\d{3}\-\d{2}$/, { message: "CPF must have the format XXX.XXX.XXX-XX" })
+	@IsCpf()
 	cpf: string;
 
 	@ApiProperty({
@@ -38,6 +40,6 @@ export class CreateCompanyDto {
 		description: "The company's CNPJ number (if legal entity)",
 	})
 	@IsString()
-	@Matches(/^\d{2}\.\d{3}\.\d{3}\/\d{4}\-\d{2}$/, { message: "CNPJ must have the format XX.XXX.XXX/XXXX-XX" })
+	@IsCnpj()
 	cnpj: string;
 }
