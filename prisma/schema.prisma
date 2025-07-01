@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id String @id @default(uuid())
+
+  name      String @unique
+  email     String @unique
+  cpf       String @unique
+  cnpj      String @unique
+  legalName String @unique @map("legal_name")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  employers Employee[]
+  proposals Proposal[]
+
+  @@map("companies")
+}
+
+model Employee {
+  id String @id @default(uuid())
+
+  fullName          String  @map("full_name")
+  email             String  @unique
+  cpf               String  @unique
+  salary            Int
+  currentlyEmployed Boolean @default(false) @map("currently_employed")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?
+
+  proposals Proposal[]
+
+  @@map("employees")
+}
+
+enum ProposalStatus {
+  approved
+  rejected
+}
+
+model Proposal {
+  id String @id @default(uuid())
+
+  status               ProposalStatus
+  totalLoanAmount      Int
+  numberOfInstallments Int            @default(1)
+  installmentAmount    Int
+  firstDueDate         DateTime
+  installmentsPaid     Int            @default(0)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  company     Company @relation(fields: [companyName], references: [name])
+  companyName String
+
+  employee      Employee @relation(fields: [employerEmail], references: [email])
+  employerEmail String
+
+  @@map("proposals")
+}
