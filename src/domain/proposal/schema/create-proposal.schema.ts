@@ -14,8 +14,8 @@ export const createProposalSchema = z.object({
 		.string()
 		.refine((val) => !Number.isNaN(Number(val)), { message: "totalLoanAmount must be a number" })
 		.transform((val) => Number(val))
-		.refine((val) => val >= 100_000 && val <= 2_000_000, {
-			message: "totalLoanAmount must be between 100000 and 2000000",
+		.refine((val) => val >= 100000 && val <= 1200000, {
+			message: "totalLoanAmount must be between 100000 and 1200000",
 		}),
 	numberOfInstallments: z
 		.string()

@@ -16,7 +16,10 @@ export class EmployeeService {
 
 			if (data.companyCnpj) {
 				const companyExists = await this.repository.company.findUnique({
-					where: { cnpj: data.companyCnpj },
+					where: {
+						cnpj: data.companyCnpj,
+						deletedAt: null,
+					},
 				});
 				if (!companyExists) {
 					throw new NotFoundException("Company not found.");
@@ -25,15 +28,18 @@ export class EmployeeService {
 				data.currentlyEmployed = false;
 			}
 
+			const employeeData: any = {
+				fullName: data.fullName,
+				email: data.email,
+				cpf: data.cpf,
+				salary: data.salary,
+				currentlyEmployed: data.currentlyEmployed,
+			};
+			if (data.companyCnpj) {
+				employeeData.companyCnpj = data.companyCnpj;
+			}
 			const employee = await this.repository.employee.create({
-				data: {
-					fullName: data.fullName,
-					email: data.email,
-					cpf: data.cpf,
-					salary: data.salary,
-					currentlyEmployed: data.currentlyEmployed,
-					companyCnpj: data.companyCnpj,
-				},
+				data: employeeData,
 			});
 
 			return employee;
@@ -62,8 +68,27 @@ export class EmployeeService {
 				deletedAt: null,
 			},
 			include: {
-				company: true,
-				proposals: true,
+				company: {
+					select: {
+						id: true,
+						name: true,
+						email: true,
+						cnpj: true,
+						legalName: true,
+					},
+				},
+				proposals: {
+					select: {
+						id: true,
+						status: true,
+						totalLoanAmount: true,
+						numberOfInstallments: true,
+						installmentAmount: true,
+						firstDueDate: true,
+						installmentsPaid: true,
+						createdAt: true,
+					},
+				},
 			},
 		});
 	}
@@ -75,8 +100,27 @@ export class EmployeeService {
 				deletedAt: null,
 			},
 			include: {
-				company: true,
-				proposals: true,
+				company: {
+					select: {
+						id: true,
+						name: true,
+						email: true,
+						cnpj: true,
+						legalName: true,
+					},
+				},
+				proposals: {
+					select: {
+						id: true,
+						status: true,
+						totalLoanAmount: true,
+						numberOfInstallments: true,
+						installmentAmount: true,
+						firstDueDate: true,
+						installmentsPaid: true,
+						createdAt: true,
+					},
+				},
 			},
 		});
 
@@ -89,7 +133,10 @@ export class EmployeeService {
 
 		if (data.companyCnpj) {
 			const companyExists = await this.repository.company.findUnique({
-				where: { id: data.companyCnpj },
+				where: {
+					cnpj: data.companyCnpj,
+					deletedAt: null,
+				},
 			});
 			if (!companyExists) {
 				throw new NotFoundException("Company not found.");

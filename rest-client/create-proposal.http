@@ -2,8 +2,8 @@ POST http://localhost:3000/proposals
 content-type: application/json
 
 {
-	"companyCnpj": "51506255000161",
-	"employeeCpf": "17452475135",
-	"totalLoanAmount": "200000",
-	"numberOfInstallments": "2"
+    "companyCnpj": "84207733000191",
+    "employeeCpf": "52522513630",
+    "totalLoanAmount": "300000",
+    "numberOfInstallments": "1"
 }

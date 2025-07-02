@@ -1,23 +1,14 @@
 import { PrismaClient } from "@prisma/client";
 import { faker } from "@faker-js/faker";
-import { cpf } from "cpf-cnpj-validator";
 import { addDays } from "date-fns";
-import slugify from "slugify";
 
 const prisma = new PrismaClient();
-
-function createEmailFromName(name: string) {
-	const cleanName = name.replace(/^SEED -\s*/i, "");
-	return `${slugify(cleanName, { lower: true, strict: true })}@gmail.com`;
-}
 
 async function clearSeedData() {
 	await prisma.proposal.deleteMany({
 		where: {
-			company: {
-				name: {
-					startsWith: "SEED -",
-				},
+			companyName: {
+				startsWith: "SEED -",
 			},
 		},
 	});
@@ -41,72 +32,84 @@ async function clearSeedData() {
 
 async function createSeedData() {
 	const mockCompanies = [
-		{ cnpj: "11444777000161", name: "SEED - Tech Solutions Ltda" },
-		{ cnpj: "22555888000172", name: "SEED - Inovação Digital S.A." },
-		{ cnpj: "33666999000183", name: "SEED - Consultoria Moderna Ltda" },
-		{ cnpj: "44777000100014", name: "SEED - Logística Rápida ME" },
-		{ cnpj: "55888000200025", name: "SEED - AgroTech Brasil Ltda" },
-		{ cnpj: "66999000300036", name: "SEED - EducaMais S.A." },
-		{ cnpj: "77000100400047", name: "SEED - Construtora Futura Ltda" },
-		{ cnpj: "88000200500058", name: "SEED - Serviços Médicos Avançados" },
-		{ cnpj: "99000300600069", name: "SEED - Mercado Online Varejo Ltda" },
-		{ cnpj: "10101010000070", name: "SEED - Green Energy Solutions S.A." },
+		{ cnpj: "84207733000191", name: "SEED - Tech Solutions Ltda", cpf: "11111111111" },
+		{ cnpj: "63604249000126", name: "SEED - Inovação Digital S.A.", cpf: "22222222222" },
+		{ cnpj: "20824809000145", name: "SEED - Consultoria Moderna Ltda", cpf: "33333333333" },
+		{ cnpj: "13734757000150", name: "SEED - Logística Rápida ME", cpf: "44444444444" },
+		{ cnpj: "83604036000101", name: "SEED - AgroTech Brasil Ltda", cpf: "55555555555" },
 	];
 
 	const companies: Awaited<ReturnType<typeof prisma.company.create>>[] = [];
 
-	for (const { name, cnpj: cnpjValue } of mockCompanies) {
+	for (const { name, cnpj: cnpjValue, cpf: cpfValue } of mockCompanies) {
 		const company = await prisma.company.create({
 			data: {
 				name,
-				email: createEmailFromName(name),
-				cpf: cpf.generate(),
+				email: `${name
+					.toLowerCase()
+					.replace(/seed - |ltda|s\.a\.|me/gi, "")
+					.trim()
+					.replace(/\s+/g, "-")}@gmail.com`,
+				cpf: cpfValue,
 				cnpj: cnpjValue,
 				legalName: name.replace("SEED - ", "") + " LTDA",
 			},
 		});
 		companies.push(company);
-		console.log(`✅ Created mocked company: ${company.name}`);
 	}
+
+	const fixedEmployees = [
+		{
+			name: "SEED - EMPREGADO",
+			email: "empregado@gmail.com",
+			salary: 1500000,
+			cpf: "04501133880",
+			companyCnpj: "84207733000191",
+		},
+		{
+			name: "SEED - EMPREGADO 12",
+			email: "empregado-12@gmail.com",
+			salary: 1200000,
+			cpf: "27147123123",
+			companyCnpj: "63604249000126",
+		},
+		{
+			name: "SEED - EMPREGADO 9",
+			email: "empregado-9@gmail.com",
+			salary: 900000,
+			cpf: "52522513630",
+			companyCnpj: "20824809000145",
+		},
+		{
+			name: "SEED - EMPREGADO 6",
+			email: "empregado-6@gmail.com",
+			salary: 600000,
+			cpf: "26385255107",
+			companyCnpj: "13734757000150",
+		},
+		{
+			name: "SEED - EMPREGADO 3",
+			email: "empregado-3@gmail.com",
+			salary: 300000,
+			cpf: "22521727890",
+			companyCnpj: "83604036000101",
+		},
+	];
 
 	const employers: Awaited<ReturnType<typeof prisma.employee.create>>[] = [];
 
-	for (let salary = 1500000; salary >= 300000; salary -= 300000) {
-		const fullName = `SEED - EMPREGADO ${salary}`;
-		const company = faker.helpers.arrayElement(companies);
-
+	for (const employeeData of fixedEmployees) {
 		const employee = await prisma.employee.create({
 			data: {
-				fullName,
-				email: createEmailFromName(fullName),
-				cpf: cpf.generate(),
-				salary,
+				fullName: employeeData.name,
+				email: employeeData.email,
+				cpf: employeeData.cpf,
+				salary: employeeData.salary,
 				currentlyEmployed: true,
-				companyCnpj: company.cnpj,
+				companyCnpj: employeeData.companyCnpj,
 			},
 		});
-
 		employers.push(employee);
-		console.log(`✅ Created fixed salary employee: ${employee.fullName}`);
-	}
-
-	{
-		const fullName = "SEED - EMPREGADO";
-		const company = faker.helpers.arrayElement(companies);
-
-		const employee = await prisma.employee.create({
-			data: {
-				fullName,
-				email: createEmailFromName(fullName),
-				cpf: cpf.generate(),
-				salary: 1500000,
-				currentlyEmployed: true,
-				companyCnpj: company.cnpj,
-			},
-		});
-
-		employers.push(employee);
-		console.log(`✅ Created final generic employee: ${employee.fullName}`);
 	}
 
 	const loanValues: number[] = [];
@@ -115,41 +118,39 @@ async function createSeedData() {
 	}
 
 	for (const amount of loanValues) {
-		const company = faker.helpers.arrayElement(companies);
 		const employee = faker.helpers.arrayElement(employers);
+		const company = companies.find((c) => c.cnpj === employee.companyCnpj);
+
+		if (!company) continue;
+
 		const numberOfInstallments = faker.number.int({ min: 1, max: 4 });
 		const installmentAmount = Math.floor(amount / numberOfInstallments);
 
 		await prisma.proposal.create({
 			data: {
 				status: faker.helpers.arrayElement(["approved", "rejected"]),
+				companyCnpj: company.cnpj,
+				employeeCpf: employee.cpf,
 				totalLoanAmount: amount,
 				numberOfInstallments,
 				installmentAmount,
-				firstDueDate: addDays(new Date(), 30).toISOString(),
+				firstDueDate: addDays(new Date(), 30),
 				installmentsPaid: 0,
 				companyName: company.name,
 				employerEmail: employee.email,
 			},
 		});
-
-		console.log(`✅ Created proposal of ${amount} for ${employee.fullName}`);
 	}
 }
 
 async function main() {
-	console.log("🧹 Cleaning old SEED data...");
 	await clearSeedData();
-
-	console.log("🌱 Creating new SEED data...");
 	await createSeedData();
-
-	console.log("✅ Seed finished!");
 }
 
 main()
 	.catch((error) => {
-		console.error("❌ Error running database seed:", error);
+		console.error("Error running database seed:", error);
 		process.exit(1);
 	})
 	.finally(async () => {

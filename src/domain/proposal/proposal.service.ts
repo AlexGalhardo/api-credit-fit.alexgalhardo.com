@@ -13,8 +13,6 @@ export class ProposalService {
 		try {
 			const data = createProposalSchema.parse(dto);
 
-			console.log("create proposal data -> ", data);
-
 			const company = await this.repository.company.findUnique({
 				where: {
 					cnpj: data.companyCnpj,
@@ -22,9 +20,7 @@ export class ProposalService {
 				},
 			});
 
-			if (!company) {
-				throw new NotFoundException("Company not found with this CNPJ");
-			}
+			if (!company) throw new NotFoundException("Company not found with this CNPJ");
 
 			const employee = await this.repository.employee.findUnique({
 				where: {
@@ -33,13 +29,43 @@ export class ProposalService {
 				},
 			});
 
-			if (!employee) {
-				throw new NotFoundException("Employee not found with this CPF");
-			}
+			if (!employee) throw new NotFoundException("Employee not found with this CPF");
+
+			const existingProposal = await this.repository.proposal.findFirst({
+				where: {
+					companyCnpj: data.companyCnpj,
+					employeeCpf: data.employeeCpf,
+					totalLoanAmount: data.totalLoanAmount,
+					numberOfInstallments: data.numberOfInstallments,
+					status: "approved",
+					deletedAt: null,
+				},
+				include: {
+					company: {
+						select: {
+							name: true,
+							email: true,
+							cnpj: true,
+							legalName: true,
+						},
+					},
+					employee: {
+						select: {
+							fullName: true,
+							email: true,
+							cpf: true,
+						},
+					},
+				},
+			});
+
+			if (existingProposal) return existingProposal;
 
 			const proposal = await this.repository.proposal.create({
 				data: {
 					status: "approved",
+					companyCnpj: data.companyCnpj,
+					employeeCpf: data.employeeCpf,
 					totalLoanAmount: data.totalLoanAmount,
 					numberOfInstallments: data.numberOfInstallments,
 					installmentAmount: Math.floor(data.totalLoanAmount / data.numberOfInstallments),
@@ -47,6 +73,23 @@ export class ProposalService {
 					installmentsPaid: 0,
 					companyName: company.name,
 					employerEmail: employee.email,
+				},
+				include: {
+					company: {
+						select: {
+							name: true,
+							email: true,
+							cnpj: true,
+							legalName: true,
+						},
+					},
+					employee: {
+						select: {
+							fullName: true,
+							email: true,
+							cpf: true,
+						},
+					},
 				},
 			});
 
@@ -74,26 +117,54 @@ export class ProposalService {
 		return await this.repository.proposal.findMany({
 			where: { deletedAt: null },
 			include: {
-				company: true,
-				employee: true,
+				company: {
+					select: {
+						id: true,
+						name: true,
+						email: true,
+						cnpj: true,
+						legalName: true,
+					},
+				},
+				employee: {
+					select: {
+						id: true,
+						fullName: true,
+						email: true,
+						cpf: true,
+						salary: true,
+						currentlyEmployed: true,
+					},
+				},
 			},
 		});
 	}
 
 	async findOne(id: string) {
-		const proposal = await this.repository.proposal.findFirst({
-			where: {
-				id,
-				deletedAt: null,
-			},
+		return await this.repository.proposal.findFirst({
+			where: { id, deletedAt: null },
 			include: {
-				company: true,
-				employee: true,
+				company: {
+					select: {
+						id: true,
+						name: true,
+						email: true,
+						cnpj: true,
+						legalName: true,
+					},
+				},
+				employee: {
+					select: {
+						id: true,
+						fullName: true,
+						email: true,
+						cpf: true,
+						salary: true,
+						currentlyEmployed: true,
+					},
+				},
 			},
 		});
-
-		if (!proposal) throw new NotFoundException("Proposal not found");
-		return proposal;
 	}
 
 	async update(id: string, dto: Partial<{ status: "approved" | "rejected"; installmentsPaid: number }>) {

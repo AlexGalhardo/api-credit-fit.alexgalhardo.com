@@ -37,7 +37,7 @@ export class CompanyService {
 		return await this.repository.company.findMany({
 			where: { deletedAt: null },
 			include: {
-				employers: true,
+				employees: true,
 				proposals: true,
 			},
 		});
@@ -47,7 +47,7 @@ export class CompanyService {
 		const company = await this.repository.company.findFirst({
 			where: { id, deletedAt: null },
 			include: {
-				employers: true,
+				employees: true,
 				proposals: true,
 			},
 		});
