@@ -27,7 +27,7 @@ CREATE TABLE "employees" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "deleted_at" TIMESTAMP(3),
-    "companyId" TEXT,
+    "companyCnpj" TEXT,
 
     CONSTRAINT "employees_pkey" PRIMARY KEY ("id")
 );
@@ -72,7 +72,7 @@ CREATE UNIQUE INDEX "employees_email_key" ON "employees"("email");
 CREATE UNIQUE INDEX "employees_cpf_key" ON "employees"("cpf");
 
 -- AddForeignKey
-ALTER TABLE "employees" ADD CONSTRAINT "employees_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "companies"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "employees" ADD CONSTRAINT "employees_companyCnpj_fkey" FOREIGN KEY ("companyCnpj") REFERENCES "companies"("cnpj") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "proposals" ADD CONSTRAINT "proposals_companyName_fkey" FOREIGN KEY ("companyName") REFERENCES "companies"("name") ON DELETE RESTRICT ON UPDATE CASCADE;

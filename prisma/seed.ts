@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { faker } from "@faker-js/faker";
-import { cpf, cnpj } from "cpf-cnpj-validator";
+import { cpf } from "cpf-cnpj-validator";
 import { addDays } from "date-fns";
 import slugify from "slugify";
 
@@ -40,43 +40,73 @@ async function clearSeedData() {
 }
 
 async function createSeedData() {
+	const mockCompanies = [
+		{ cnpj: "11444777000161", name: "SEED - Tech Solutions Ltda" },
+		{ cnpj: "22555888000172", name: "SEED - Inovação Digital S.A." },
+		{ cnpj: "33666999000183", name: "SEED - Consultoria Moderna Ltda" },
+		{ cnpj: "44777000100014", name: "SEED - Logística Rápida ME" },
+		{ cnpj: "55888000200025", name: "SEED - AgroTech Brasil Ltda" },
+		{ cnpj: "66999000300036", name: "SEED - EducaMais S.A." },
+		{ cnpj: "77000100400047", name: "SEED - Construtora Futura Ltda" },
+		{ cnpj: "88000200500058", name: "SEED - Serviços Médicos Avançados" },
+		{ cnpj: "99000300600069", name: "SEED - Mercado Online Varejo Ltda" },
+		{ cnpj: "10101010000070", name: "SEED - Green Energy Solutions S.A." },
+	];
+
 	const companies: Awaited<ReturnType<typeof prisma.company.create>>[] = [];
 
-	for (let i = 0; i < 10; i++) {
-		const name = `SEED - ${faker.company.name()}`;
+	for (const { name, cnpj: cnpjValue } of mockCompanies) {
 		const company = await prisma.company.create({
 			data: {
 				name,
 				email: createEmailFromName(name),
 				cpf: cpf.generate(),
-				cnpj: cnpj.generate(),
-				legalName: `${faker.company.name()} Ltda`,
+				cnpj: cnpjValue,
+				legalName: name.replace("SEED - ", "") + " LTDA",
 			},
 		});
 		companies.push(company);
-		console.log(`✅ Created company: ${company.name}`);
+		console.log(`✅ Created mocked company: ${company.name}`);
 	}
 
 	const employers: Awaited<ReturnType<typeof prisma.employee.create>>[] = [];
 
-	for (let i = 0; i < 50; i++) {
-		const fullName = `SEED - ${faker.person.fullName()}`;
-		const hasCompany = i < 45;
-		const company = hasCompany ? faker.helpers.arrayElement(companies) : null;
+	for (let salary = 1500000; salary >= 300000; salary -= 300000) {
+		const fullName = `SEED - EMPREGADO ${salary}`;
+		const company = faker.helpers.arrayElement(companies);
 
 		const employee = await prisma.employee.create({
 			data: {
 				fullName,
 				email: createEmailFromName(fullName),
 				cpf: cpf.generate(),
-				salary: faker.number.int({ min: 1200, max: 10000 }),
+				salary,
 				currentlyEmployed: true,
-				companyCnpj: company?.cnpj ?? null,
+				companyCnpj: company.cnpj,
 			},
 		});
 
 		employers.push(employee);
-		console.log(`✅ Created employee: ${employee.fullName}`);
+		console.log(`✅ Created fixed salary employee: ${employee.fullName}`);
+	}
+
+	{
+		const fullName = "SEED - EMPREGADO";
+		const company = faker.helpers.arrayElement(companies);
+
+		const employee = await prisma.employee.create({
+			data: {
+				fullName,
+				email: createEmailFromName(fullName),
+				cpf: cpf.generate(),
+				salary: 1500000,
+				currentlyEmployed: true,
+				companyCnpj: company.cnpj,
+			},
+		});
+
+		employers.push(employee);
+		console.log(`✅ Created final generic employee: ${employee.fullName}`);
 	}
 
 	const loanValues: number[] = [];
@@ -87,10 +117,10 @@ async function createSeedData() {
 	for (const amount of loanValues) {
 		const company = faker.helpers.arrayElement(companies);
 		const employee = faker.helpers.arrayElement(employers);
-		const numberOfInstallments = faker.number.int({ min: 1, max: 10 });
+		const numberOfInstallments = faker.number.int({ min: 1, max: 4 });
 		const installmentAmount = Math.floor(amount / numberOfInstallments);
 
-		const proposal = await prisma.proposal.create({
+		await prisma.proposal.create({
 			data: {
 				status: faker.helpers.arrayElement(["approved", "rejected"]),
 				totalLoanAmount: amount,
@@ -119,7 +149,7 @@ async function main() {
 
 main()
 	.catch((error) => {
-		console.error("Error running database seed: ", error);
+		console.error("❌ Error running database seed:", error);
 		process.exit(1);
 	})
 	.finally(async () => {
