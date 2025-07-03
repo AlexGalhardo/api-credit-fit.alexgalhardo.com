@@ -1,0 +1,1 @@
+{"version":3,"file":"proposal.module.js","sourceRoot":"","sources":["../../../../src/domain/proposal/proposal.module.ts"],"names":[],"mappings":";;;;;;;;;AAAA,2CAAwC;AACxC,+DAA2D;AAC3D,yDAAqD;AAM9C,IAAM,aAAa,GAAnB,MAAM,aAAa;CAAG,CAAA;AAAhB,sCAAa;wBAAb,aAAa;IAJzB,IAAA,eAAM,EAAC;QACP,WAAW,EAAE,CAAC,wCAAkB,CAAC;QACjC,SAAS,EAAE,CAAC,kCAAe,CAAC;KAC5B,CAAC;GACW,aAAa,CAAG"}

@@ -1,5 +1,10 @@
 <h1 align="center"><a href="https://api-credit-fit.alexgalhardo.com" target="_blank">api-credit-fit.alexgalhardo.com</a></h1>
 
+## FrontEnd
+
+- Live: <https://credit-fit.alexgalhardo.com>
+- Source Code: <https://github.com/AlexGalhardo/credit-fit.alexgalhardo.com>
+
 ## Technologies
 
 - [NodeJS v22](https://nodejs.org/en)
@@ -78,8 +83,21 @@ npm run start
 
 - You can see and use the HTTP Requests references inside folder [rest-client/](rest-client/)
 - OpenAPI Documentation (using Swagger)
-  - Local: <http://localhost:3000/api-docs>
-  - Live API-DOCS: <https://api-credit-fit.alexgalhardo.com/api-docs>
+  - Localhost: <http://localhost:3000/api-docs>
+
+## Tests
+
+a. Run Unit Tests
+
+```bash
+npm run test
+````
+
+b. Run e2e Tests
+
+```bash
+npm run test:e2e
+```
 
 ## License
 

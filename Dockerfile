@@ -12,4 +12,4 @@ RUN cp .env.example .env
 
 RUN npx prisma generate
 
-CMD ["sh", "-c", "npx prisma migrate dev --name init && npm run dev"]
+CMD ["sh", "-c", "npx prisma migrate dev --name init && npx prisma db seed && npm run dev"]

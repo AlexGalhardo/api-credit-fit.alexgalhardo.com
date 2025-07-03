@@ -60,12 +60,12 @@ model Employee {
   cpf               String    @unique
   salary            Int
   currentlyEmployed Boolean   @default(true)
-  companyCnpj       String
+  companyCnpj       String?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   deletedAt         DateTime?
 
-  company   Company    @relation(fields: [companyCnpj], references: [cnpj])
+  company   Company?    @relation(fields: [companyCnpj], references: [cnpj])
   proposals Proposal[]
 
   @@map("employees")

@@ -10,13 +10,16 @@ export class AppService {
 	}
 
 	async login(dto: LoginDto) {
+		console.log("login dto -> ", dto);
 		if (dto.email === "admin@gmail.com" && dto.password === "admin123") {
 			return {
 				id: "1",
 				name: "ADMIN",
 				email: "admin@gmail.com",
 				role: "admin",
-				salary: null,
+				salary: 10000,
+				cpf: "22550521560",
+				companyCnpj: "78581373000190",
 			};
 		}
 

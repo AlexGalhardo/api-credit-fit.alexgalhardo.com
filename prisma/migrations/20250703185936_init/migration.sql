@@ -44,7 +44,7 @@ CREATE TABLE "employees" (
     "cpf" TEXT NOT NULL,
     "salary" INTEGER NOT NULL,
     "currentlyEmployed" BOOLEAN NOT NULL DEFAULT true,
-    "companyCnpj" TEXT NOT NULL,
+    "companyCnpj" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
@@ -80,4 +80,4 @@ ALTER TABLE "proposals" ADD CONSTRAINT "proposals_companyCnpj_fkey" FOREIGN KEY 
 ALTER TABLE "proposals" ADD CONSTRAINT "proposals_employeeCpf_fkey" FOREIGN KEY ("employeeCpf") REFERENCES "employees"("cpf") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "employees" ADD CONSTRAINT "employees_companyCnpj_fkey" FOREIGN KEY ("companyCnpj") REFERENCES "companies"("cnpj") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "employees" ADD CONSTRAINT "employees_companyCnpj_fkey" FOREIGN KEY ("companyCnpj") REFERENCES "companies"("cnpj") ON DELETE SET NULL ON UPDATE CASCADE;

@@ -17,4 +17,4 @@ echo "⬇️  Stopping docker-compose services..."
 sudo docker-compose down --volumes --remove-orphans
 
 echo "🔨 Building and starting services..."
-sudo docker-compose up --build -d
+sudo docker-compose up --build

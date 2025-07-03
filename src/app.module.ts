@@ -18,7 +18,7 @@ import { RepositoryModule } from "./repository/repository.module";
 		ThrottlerModule.forRoot([
 			{
 				ttl: 1000,
-				limit: 100,
+				limit: 1, // = 1 request per second
 			},
 		]),
 		RepositoryModule,

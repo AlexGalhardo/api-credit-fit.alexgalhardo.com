@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsString, Length } from "class-validator";
-import { IsCnpj } from "../../../utils/isCnpj";
-import { IsCpf } from "../../../utils/isCpf";
+import { IsCnpj } from "../../../utils/is-cnpj";
+import { IsCpf } from "../../../utils/is-cpf";
 
 export class CreateCompanyDto {
 	@ApiProperty({

@@ -1,11 +1,11 @@
 services:
-  postgres_db:
+  api_creditfit_postgres_db:
     image: postgres
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres_db
+      POSTGRES_DB: api_creditfit_postgres_db
     ports:
       - '5432:5432'
     volumes:
@@ -13,17 +13,17 @@ services:
     networks:
       - app-network
 
-  # api:
-  #   build: .
-  #   ports:
-  #     - '3000:3000'
-  #   depends_on:
-  #     - postgres_db
-  #   environment:
-  #     DATABASE_URL: postgres://postgres:postgres@postgres_db:5432/farm_nestjs_api
-  #     NODE_ENV: development
-  #   networks:
-  #     - app-network
+  api:
+    build: .
+    ports:
+      - '3000:3000'
+    depends_on:
+      - api_creditfit_postgres_db
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@api_creditfit_postgres_db:5432/api_creditfit_postgres_db
+      NODE_ENV: development
+    networks:
+      - app-network
 
 volumes:
   pgdata:
