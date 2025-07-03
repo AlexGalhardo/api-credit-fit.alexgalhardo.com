@@ -21,7 +21,7 @@ describe("CompanyService", () => {
 		createdAt: new Date(),
 		updatedAt: new Date(),
 		deletedAt: null,
-		employers: [],
+		employees: [],
 		proposals: [],
 	};
 
@@ -83,7 +83,7 @@ describe("CompanyService", () => {
 			expect(prisma.company.findMany).toHaveBeenCalledWith({
 				where: { deletedAt: null },
 				include: {
-					employers: true,
+					employees: true,
 					proposals: true,
 				},
 			});
@@ -98,7 +98,7 @@ describe("CompanyService", () => {
 			expect(prisma.company.findFirst).toHaveBeenCalledWith({
 				where: { id: "company-uuid", deletedAt: null },
 				include: {
-					employers: true,
+					employees: true,
 					proposals: true,
 				},
 			});

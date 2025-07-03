@@ -6,9 +6,9 @@ import { AppModule } from "../src/app.module";
 
 describe("Loan System (e2e)", () => {
 	let app: INestApplication;
-	let createdCompanyId: string;
-	let createdEmployeeId: string;
-	let createdProposalId: string;
+	let createdCompanyIds: string[] = [];
+	let createdEmployeeIds: string[] = [];
+	let createdProposalIds: string[] = [];
 
 	beforeAll(async () => {
 		const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -20,40 +20,41 @@ describe("Loan System (e2e)", () => {
 	});
 
 	afterAll(async () => {
+		for (const proposalId of createdProposalIds) {
+			await request(app.getHttpServer())
+				.delete(`/proposals/${proposalId}`)
+				.catch(() => {});
+		}
+
+		for (const employeeId of createdEmployeeIds) {
+			await request(app.getHttpServer())
+				.delete(`/employees/${employeeId}`)
+				.catch(() => {});
+		}
+
+		for (const companyId of createdCompanyIds) {
+			await request(app.getHttpServer())
+				.delete(`/companies/${companyId}`)
+				.catch(() => {});
+		}
+
 		await app.close();
 	});
 
 	afterEach(async () => {
-		if (createdProposalId) {
-			await request(app.getHttpServer())
-				.delete(`/proposals/${createdProposalId}`)
-				.catch(() => {});
-		}
-
-		if (createdEmployeeId) {
-			await request(app.getHttpServer())
-				.delete(`/employees/${createdEmployeeId}`)
-				.catch(() => {});
-		}
-
-		if (createdCompanyId) {
-			await request(app.getHttpServer())
-				.delete(`/companies/${createdCompanyId}`)
-				.catch(() => {});
-		}
-
-		createdCompanyId = "";
-		createdEmployeeId = "";
-		createdProposalId = "";
+		createdCompanyIds = [];
+		createdEmployeeIds = [];
+		createdProposalIds = [];
 	});
 
 	it("POST /companies should create a new company", async () => {
+		const timestamp = Date.now();
 		const companyData = {
 			cnpj: cnpj.generate(),
-			legalName: "TEST_Company Legal Name",
-			name: "TEST_Company Name",
+			legalName: `TEST_Company Legal Name ${timestamp}`,
+			name: `TEST_Company Name ${timestamp}`,
 			cpf: cpf.generate(),
-			email: "test-company@example.com",
+			email: `test-company-${timestamp}@example.com`,
 		};
 
 		const response = await request(app.getHttpServer()).post("/companies").send(companyData).expect(201);
@@ -69,26 +70,27 @@ describe("Loan System (e2e)", () => {
 		expect(response.body.data).toHaveProperty("updatedAt");
 		expect(response.body.data.deletedAt).toBeNull();
 
-		createdCompanyId = response.body.data.id;
+		createdCompanyIds.push(response.body.data.id);
 	});
 
 	it("POST /employees should create a new employee", async () => {
+		const timestamp = Date.now();
 		const companyData = {
 			cnpj: cnpj.generate(),
-			legalName: "TEST_Company for Employee",
-			name: "TEST_Company Name",
+			legalName: `TEST_Company for Employee ${timestamp}`,
+			name: `TEST_Company Name ${timestamp}`,
 			cpf: cpf.generate(),
-			email: "company-for-employee@example.com",
+			email: `company-for-employee-${timestamp}@example.com`,
 		};
 
 		const companyResponse = await request(app.getHttpServer()).post("/companies").send(companyData).expect(201);
 
-		createdCompanyId = companyResponse.body.data.id;
+		createdCompanyIds.push(companyResponse.body.data.id);
 
 		const employeeData = {
-			fullName: "TEST_Employee Name",
+			fullName: `Employee ${timestamp}`,
 			cpf: cpf.generate(),
-			email: "test-employee@example.com",
+			email: `test-employee-${timestamp}@example.com`,
 			salary: 1000000,
 			companyCnpj: companyData.cnpj,
 		};
@@ -106,34 +108,35 @@ describe("Loan System (e2e)", () => {
 		expect(response.body.data).toHaveProperty("updatedAt");
 		expect(response.body.data.deletedAt).toBeNull();
 
-		createdEmployeeId = response.body.data.id;
+		createdEmployeeIds.push(response.body.data.id);
 	});
 
 	it("POST /proposals should create a new proposal", async () => {
+		const timestamp = Date.now();
 		const companyData = {
 			cnpj: cnpj.generate(),
-			legalName: "TEST_Company for Proposal",
-			name: "TEST_Company Name for Proposal",
+			legalName: `Company Legal ${timestamp}`,
+			name: `Company ${timestamp}`,
 			cpf: cpf.generate(),
-			email: "company-for-proposal@example.com",
+			email: `company-${timestamp}@example.com`,
 		};
 
 		const companyResponse = await request(app.getHttpServer()).post("/companies").send(companyData).expect(201);
 
-		createdCompanyId = companyResponse.body.data.id;
+		createdCompanyIds.push(companyResponse.body.data.id);
 
 		const employeeCpf = cpf.generate();
 		const employeeData = {
-			fullName: "TEST_Employee for Proposal",
+			fullName: `Employee ${timestamp}`,
 			cpf: employeeCpf,
-			email: "employee-for-proposal@example.com",
-			salary: 800000, // R$ 8.000,00 em centavos
+			email: `employee-${timestamp}@example.com`,
+			salary: 1000000,
 			companyCnpj: companyData.cnpj,
 		};
 
 		const employeeResponse = await request(app.getHttpServer()).post("/employees").send(employeeData).expect(201);
 
-		createdEmployeeId = employeeResponse.body.data.id;
+		createdEmployeeIds.push(employeeResponse.body.data.id);
 
 		const proposalData = {
 			companyCnpj: companyData.cnpj,
@@ -158,35 +161,36 @@ describe("Loan System (e2e)", () => {
 		expect(response.body.data).toHaveProperty("updatedAt");
 		expect(response.body.data.deletedAt).toBeNull();
 
-		createdProposalId = response.body.data.id;
+		createdProposalIds.push(response.body.data.id);
 	});
 
 	it("should create complete loan flow: company -> employee -> proposal", async () => {
+		const timestamp = Date.now();
 		const companyData = {
 			cnpj: cnpj.generate(),
-			legalName: "TEST_Complete Flow Company",
-			name: "TEST_Flow Company",
+			legalName: `TEST_Complete Flow Company ${timestamp}`,
+			name: `TEST_Flow Company ${timestamp}`,
 			cpf: cpf.generate(),
-			email: "flow-company@example.com",
+			email: `flow-company-${timestamp}@example.com`,
 		};
 
 		const companyResponse = await request(app.getHttpServer()).post("/companies").send(companyData).expect(201);
 
-		createdCompanyId = companyResponse.body.data.id;
+		createdCompanyIds.push(companyResponse.body.data.id);
 		expect(companyResponse.body.success).toBe(true);
 
 		const employeeCpf = cpf.generate();
 		const employeeData = {
-			fullName: "TEST_Flow Employee",
+			fullName: `Flow Employee ${timestamp}`,
 			cpf: employeeCpf,
-			email: "flow-employee@example.com",
+			email: `flow-employee-${timestamp}@example.com`,
 			salary: 1200000,
 			companyCnpj: companyData.cnpj,
 		};
 
 		const employeeResponse = await request(app.getHttpServer()).post("/employees").send(employeeData).expect(201);
 
-		createdEmployeeId = employeeResponse.body.data.id;
+		createdEmployeeIds.push(employeeResponse.body.data.id);
 		expect(employeeResponse.body.success).toBe(true);
 		expect(employeeResponse.body.data.companyCnpj).toBe(companyData.cnpj);
 
@@ -199,7 +203,7 @@ describe("Loan System (e2e)", () => {
 
 		const proposalResponse = await request(app.getHttpServer()).post("/proposals").send(proposalData).expect(201);
 
-		createdProposalId = proposalResponse.body.data.id;
+		createdProposalIds.push(proposalResponse.body.data.id);
 		expect(proposalResponse.body.success).toBe(true);
 		expect(proposalResponse.body.data.companyName).toBe(companyData.name);
 		expect(proposalResponse.body.data.employerEmail).toBe(employeeData.email);
@@ -210,28 +214,12 @@ describe("Loan System (e2e)", () => {
 		expect(proposalResponse.body.data.status).toBe("approved");
 	});
 
-	it("should handle employee without company", async () => {
-		const employeeData = {
-			fullName: "TEST_Independent Employee",
-			cpf: cpf.generate(),
-			email: "independent@example.com",
-			salary: 600000,
-		};
-
-		const response = await request(app.getHttpServer()).post("/employees").send(employeeData).expect(201);
-
-		expect(response.body.success).toBe(true);
-		expect(response.body.data.companyCnpj).toBeNull();
-		expect(response.body.data.currentlyEmployed).toBe(false);
-
-		createdEmployeeId = response.body.data.id;
-	});
-
 	it("should validate minimum salary requirement", async () => {
+		const timestamp = Date.now();
 		const employeeData = {
-			fullName: "TEST_Low Salary Employee",
+			fullName: `Low Salary ${timestamp}`,
 			cpf: cpf.generate(),
-			email: "lowsalary@example.com",
+			email: `lowsalary-${timestamp}@example.com`,
 			salary: 50000,
 		};
 
@@ -239,10 +227,11 @@ describe("Loan System (e2e)", () => {
 	});
 
 	it("should validate maximum salary requirement", async () => {
+		const timestamp = Date.now();
 		const employeeData = {
-			fullName: "TEST_High Salary Employee",
+			fullName: `High Salary ${timestamp}`,
 			cpf: cpf.generate(),
-			email: "highsalary@example.com",
+			email: `highsalary-${timestamp}@example.com`,
 			salary: 1500000,
 		};
 

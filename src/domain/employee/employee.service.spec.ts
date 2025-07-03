@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { BadRequestException } from "@nestjs/common";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { cnpj, cpf } from "cpf-cnpj-validator";
 import { RepositoryService } from "../../repository/repository.service";
@@ -92,7 +92,7 @@ describe("EmployeeService", () => {
 
 			expect(result).toEqual(mockEmployee);
 			expect(prisma.company.findUnique).toHaveBeenCalledWith({
-				where: { cnpj: dto.companyCnpj },
+				where: { cnpj: dto.companyCnpj, deletedAt: null },
 			});
 			expect(prisma.employee.create).toHaveBeenCalledWith({
 				data: {
@@ -135,7 +135,6 @@ describe("EmployeeService", () => {
 					cpf: dto.cpf,
 					salary: dto.salary,
 					currentlyEmployed: false,
-					companyCnpj: dto.companyCnpj,
 				},
 			});
 		});
@@ -154,7 +153,7 @@ describe("EmployeeService", () => {
 
 			await expect(service.create(dto)).rejects.toThrow(BadRequestException);
 			expect(prisma.company.findUnique).toHaveBeenCalledWith({
-				where: { cnpj: dto.companyCnpj },
+				where: { cnpj: dto.companyCnpj, deletedAt: null },
 			});
 		});
 	});
@@ -166,7 +165,29 @@ describe("EmployeeService", () => {
 			expect(result).toEqual([mockEmployee]);
 			expect(prisma.employee.findMany).toHaveBeenCalledWith({
 				where: { deletedAt: null },
-				include: { company: true, proposals: true },
+				include: {
+					company: {
+						select: {
+							id: true,
+							name: true,
+							email: true,
+							cnpj: true,
+							legalName: true,
+						},
+					},
+					proposals: {
+						select: {
+							id: true,
+							status: true,
+							totalLoanAmount: true,
+							numberOfInstallments: true,
+							installmentAmount: true,
+							firstDueDate: true,
+							installmentsPaid: true,
+							createdAt: true,
+						},
+					},
+				},
 			});
 		});
 	});
@@ -178,7 +199,29 @@ describe("EmployeeService", () => {
 			expect(result).toEqual(mockEmployee);
 			expect(prisma.employee.findFirst).toHaveBeenCalledWith({
 				where: { id: mockEmployee.id, deletedAt: null },
-				include: { company: true, proposals: true },
+				include: {
+					company: {
+						select: {
+							id: true,
+							name: true,
+							email: true,
+							cnpj: true,
+							legalName: true,
+						},
+					},
+					proposals: {
+						select: {
+							id: true,
+							status: true,
+							totalLoanAmount: true,
+							numberOfInstallments: true,
+							installmentAmount: true,
+							firstDueDate: true,
+							installmentsPaid: true,
+							createdAt: true,
+						},
+					},
+				},
 			});
 		});
 	});
@@ -220,7 +263,7 @@ describe("EmployeeService", () => {
 
 			expect(result).toEqual(updatedEmployee);
 			expect(prisma.company.findUnique).toHaveBeenCalledWith({
-				where: { id: newCompanyCnpj },
+				where: { cnpj: newCompanyCnpj, deletedAt: null },
 			});
 			expect(prisma.employee.update).toHaveBeenCalledWith({
 				where: { id: mockEmployee.id },

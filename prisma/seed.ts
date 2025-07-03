@@ -96,7 +96,7 @@ async function createSeedData() {
 		},
 	];
 
-	const employers: Awaited<ReturnType<typeof prisma.employee.create>>[] = [];
+	const employees: Awaited<ReturnType<typeof prisma.employee.create>>[] = [];
 
 	for (const employeeData of fixedEmployees) {
 		const employee = await prisma.employee.create({
@@ -109,7 +109,7 @@ async function createSeedData() {
 				companyCnpj: employeeData.companyCnpj,
 			},
 		});
-		employers.push(employee);
+		employees.push(employee);
 	}
 
 	const loanValues: number[] = [];
@@ -118,7 +118,7 @@ async function createSeedData() {
 	}
 
 	for (const amount of loanValues) {
-		const employee = faker.helpers.arrayElement(employers);
+		const employee = faker.helpers.arrayElement(employees);
 		const company = companies.find((c) => c.cnpj === employee.companyCnpj);
 
 		if (!company) continue;

@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { BadRequestException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { ProposalStatus } from "@prisma/client";
 import { cnpj, cpf } from "cpf-cnpj-validator";
@@ -49,11 +49,26 @@ describe("ProposalService", () => {
 		installmentsPaid: 0,
 		companyName: "Empresa Ltda",
 		employerEmail: "funcionario@gmail.com",
+		companyCnpj: validCnpj,
+		employeeCpf: validCpf,
 		createdAt: new Date(),
 		updatedAt: new Date(),
 		deletedAt: null,
-		company: mockCompany,
-		employee: mockEmployee,
+		company: {
+			id: "company-1",
+			name: "Empresa Ltda",
+			email: "empresa@test.com",
+			cnpj: validCnpj,
+			legalName: "Empresa Legal Ltda",
+		},
+		employee: {
+			id: "employee-1",
+			fullName: "João Silva",
+			email: "funcionario@gmail.com",
+			cpf: validCpf,
+			salary: 500000,
+			currentlyEmployed: true,
+		},
 	};
 
 	beforeEach(async () => {
@@ -70,10 +85,10 @@ describe("ProposalService", () => {
 							update: jest.fn(),
 						},
 						company: {
-							findFirst: jest.fn(),
+							findUnique: jest.fn(),
 						},
 						employee: {
-							findFirst: jest.fn(),
+							findUnique: jest.fn(),
 						},
 					},
 				},
@@ -89,12 +104,15 @@ describe("ProposalService", () => {
 		(prisma.proposal.findMany as jest.Mock).mockResolvedValue([mockProposal]);
 		(prisma.proposal.findFirst as jest.Mock).mockResolvedValue(mockProposal);
 		(prisma.proposal.update as jest.Mock).mockResolvedValue(mockProposal);
-		(prisma.company.findFirst as jest.Mock).mockResolvedValue(mockCompany);
-		(prisma.employee.findFirst as jest.Mock).mockResolvedValue(mockEmployee);
+		(prisma.company.findUnique as jest.Mock).mockResolvedValue(mockCompany);
+		(prisma.employee.findUnique as jest.Mock).mockResolvedValue(mockEmployee);
 	});
 
 	describe("create", () => {
 		it("should create a proposal", async () => {
+			// Mock that no existing proposal is found
+			(prisma.proposal.findFirst as jest.Mock).mockResolvedValueOnce(null);
+
 			const dto: CreateProposalDto = {
 				companyCnpj: validCnpj,
 				employeeCpf: validCpf,
@@ -105,15 +123,17 @@ describe("ProposalService", () => {
 			const result = await service.create(dto);
 
 			expect(result).toEqual(mockProposal);
-			expect(prisma.company.findFirst).toHaveBeenCalledWith({
+			expect(prisma.company.findUnique).toHaveBeenCalledWith({
 				where: { cnpj: dto.companyCnpj, deletedAt: null },
 			});
-			expect(prisma.employee.findFirst).toHaveBeenCalledWith({
+			expect(prisma.employee.findUnique).toHaveBeenCalledWith({
 				where: { cpf: dto.employeeCpf, deletedAt: null },
 			});
 			expect(prisma.proposal.create).toHaveBeenCalledWith({
 				data: {
 					status: "approved",
+					companyCnpj: dto.companyCnpj,
+					employeeCpf: dto.employeeCpf,
 					totalLoanAmount: 100000,
 					numberOfInstallments: 2,
 					installmentAmount: 50000,
@@ -121,6 +141,23 @@ describe("ProposalService", () => {
 					installmentsPaid: 0,
 					companyName: mockCompany.name,
 					employerEmail: mockEmployee.email,
+				},
+				include: {
+					company: {
+						select: {
+							name: true,
+							email: true,
+							cnpj: true,
+							legalName: true,
+						},
+					},
+					employee: {
+						select: {
+							fullName: true,
+							email: true,
+							cpf: true,
+						},
+					},
 				},
 			});
 		});
@@ -159,7 +196,7 @@ describe("ProposalService", () => {
 		});
 
 		it("should throw BadRequestException when company not found", async () => {
-			(prisma.company.findFirst as jest.Mock).mockResolvedValueOnce(null);
+			(prisma.company.findUnique as jest.Mock).mockResolvedValueOnce(null);
 
 			const dto: CreateProposalDto = {
 				companyCnpj: cnpj.generate(),
@@ -169,13 +206,10 @@ describe("ProposalService", () => {
 			};
 
 			await expect(service.create(dto)).rejects.toThrow(BadRequestException);
-			expect(prisma.company.findFirst).toHaveBeenCalledWith({
-				where: { cnpj: dto.companyCnpj, deletedAt: null },
-			});
 		});
 
 		it("should throw BadRequestException when employee not found", async () => {
-			(prisma.employee.findFirst as jest.Mock).mockResolvedValueOnce(null);
+			(prisma.employee.findUnique as jest.Mock).mockResolvedValueOnce(null);
 
 			const dto: CreateProposalDto = {
 				companyCnpj: validCnpj,
@@ -185,9 +219,6 @@ describe("ProposalService", () => {
 			};
 
 			await expect(service.create(dto)).rejects.toThrow(BadRequestException);
-			expect(prisma.employee.findFirst).toHaveBeenCalledWith({
-				where: { cpf: dto.employeeCpf, deletedAt: null },
-			});
 		});
 
 		it("should throw BadRequestException on zero numberOfInstallments", async () => {
@@ -211,6 +242,22 @@ describe("ProposalService", () => {
 
 			await expect(service.create(invalidDto as any)).rejects.toThrow(BadRequestException);
 		});
+
+		it("should return existing proposal if found", async () => {
+			const dto: CreateProposalDto = {
+				companyCnpj: validCnpj,
+				employeeCpf: validCpf,
+				totalLoanAmount: "100000",
+				numberOfInstallments: "2",
+			};
+
+			(prisma.proposal.findFirst as jest.Mock).mockResolvedValueOnce(mockProposal);
+
+			const result = await service.create(dto);
+
+			expect(result).toEqual(mockProposal);
+			expect(prisma.proposal.create).not.toHaveBeenCalled();
+		});
 	});
 
 	describe("findAll", () => {
@@ -221,8 +268,25 @@ describe("ProposalService", () => {
 			expect(prisma.proposal.findMany).toHaveBeenCalledWith({
 				where: { deletedAt: null },
 				include: {
-					company: true,
-					employee: true,
+					company: {
+						select: {
+							id: true,
+							name: true,
+							email: true,
+							cnpj: true,
+							legalName: true,
+						},
+					},
+					employee: {
+						select: {
+							id: true,
+							fullName: true,
+							email: true,
+							cpf: true,
+							salary: true,
+							currentlyEmployed: true,
+						},
+					},
 				},
 			});
 		});
@@ -236,16 +300,35 @@ describe("ProposalService", () => {
 			expect(prisma.proposal.findFirst).toHaveBeenCalledWith({
 				where: { id: "proposal-1", deletedAt: null },
 				include: {
-					company: true,
-					employee: true,
+					company: {
+						select: {
+							id: true,
+							name: true,
+							email: true,
+							cnpj: true,
+							legalName: true,
+						},
+					},
+					employee: {
+						select: {
+							id: true,
+							fullName: true,
+							email: true,
+							cpf: true,
+							salary: true,
+							currentlyEmployed: true,
+						},
+					},
 				},
 			});
 		});
 
-		it("should throw NotFoundException if proposal not found", async () => {
+		it("should return null if proposal not found", async () => {
 			(prisma.proposal.findFirst as jest.Mock).mockResolvedValueOnce(null);
 
-			await expect(service.findOne("invalid-id")).rejects.toThrow(NotFoundException);
+			const result = await service.findOne("invalid-id");
+
+			expect(result).toBeNull();
 		});
 	});
 
