@@ -116,7 +116,7 @@ async function createSeedData() {
         const installmentAmount = Math.floor(amount / numberOfInstallments);
         await prisma.proposal.create({
             data: {
-                status: faker_1.faker.helpers.arrayElement(["approved", "rejected"]),
+                status: faker_1.faker.helpers.arrayElement([client_1.ProposalStatus.APPROVED, client_1.ProposalStatus.REJECTED]),
                 companyCnpj: company.cnpj,
                 employeeCpf: employee.cpf,
                 totalLoanAmount: amount,
@@ -126,6 +126,7 @@ async function createSeedData() {
                 installmentsPaid: 0,
                 companyName: company.name,
                 employerEmail: employee.email,
+                employeeCreditScore: 650,
             },
         });
     }

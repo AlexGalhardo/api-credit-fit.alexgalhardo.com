@@ -20,6 +20,30 @@ let ProposalService = class ProposalService {
     constructor(repository) {
         this.repository = repository;
     }
+    async verifyEmployeeCreditScore(employeeCpf) {
+        try {
+            const response = await fetch("https://mocki.io/v1/f7b3627c-444a-4d65-b76b-d94a6c63bdcf");
+            const { score } = await response.json();
+            return score;
+        }
+        catch (error) {
+            throw new common_1.BadRequestException({
+                success: false,
+                message: error?.message ?? "Não foi possível verificar o score de crédito do empregado",
+            });
+        }
+    }
+    verifyIfEmployeeCreditScoreIsEnoughToApproveLoan(employeeCreditScore, employeeSalary) {
+        if (employeeSalary <= 200000)
+            return employeeCreditScore >= 400;
+        if (employeeSalary <= 400000)
+            return employeeCreditScore >= 500;
+        if (employeeSalary <= 800000)
+            return employeeCreditScore >= 600;
+        if (employeeSalary <= 1200000)
+            return employeeCreditScore >= 700;
+        return false;
+    }
     async create(dto) {
         try {
             const data = create_proposal_schema_1.createProposalSchema.parse(dto);
@@ -30,7 +54,7 @@ let ProposalService = class ProposalService {
                 },
             });
             if (!company)
-                throw new common_1.NotFoundException("Company not found with this CNPJ");
+                throw new common_1.NotFoundException(`Empresa não encontrada com CNPJ ${data.companyCnpj}`);
             const employee = await this.repository.employee.findUnique({
                 where: {
                     cpf: data.employeeCpf,
@@ -38,14 +62,18 @@ let ProposalService = class ProposalService {
                 },
             });
             if (!employee)
-                throw new common_1.NotFoundException("Employee not found with this CPF");
+                throw new common_1.NotFoundException(`Empregado não encontrado com CPF ${data.employeeCpf}`);
+            const employeeCreditScore = await this.verifyEmployeeCreditScore(employee.cpf);
+            const approveLoan = this.verifyIfEmployeeCreditScoreIsEnoughToApproveLoan(employeeCreditScore, employee.salary);
+            const proposalStatus = approveLoan ? client_1.ProposalStatus.APPROVED : client_1.ProposalStatus.REJECTED;
             const existingProposal = await this.repository.proposal.findFirst({
                 where: {
                     companyCnpj: data.companyCnpj,
                     employeeCpf: data.employeeCpf,
                     totalLoanAmount: data.totalLoanAmount,
                     numberOfInstallments: data.numberOfInstallments,
-                    status: "approved",
+                    status: proposalStatus,
+                    employeeCreditScore,
                     deletedAt: null,
                 },
                 include: {
@@ -66,11 +94,17 @@ let ProposalService = class ProposalService {
                     },
                 },
             });
-            if (existingProposal)
-                return existingProposal;
+            if (existingProposal) {
+                return approveLoan
+                    ? { success: true, data: existingProposal }
+                    : {
+                        success: false,
+                        message: "Score de crédito do empregado insuficiente para aprovação do empréstimo",
+                    };
+            }
             const proposal = await this.repository.proposal.create({
                 data: {
-                    status: "approved",
+                    status: proposalStatus,
                     companyCnpj: data.companyCnpj,
                     employeeCpf: data.employeeCpf,
                     totalLoanAmount: data.totalLoanAmount,
@@ -80,32 +114,40 @@ let ProposalService = class ProposalService {
                     installmentsPaid: 0,
                     companyName: company.name,
                     employerEmail: employee.email,
+                    employeeCreditScore,
                 },
-                include: {
-                    company: {
-                        select: {
-                            name: true,
-                            email: true,
-                            cnpj: true,
-                            legalName: true,
+                include: approveLoan
+                    ? {
+                        company: {
+                            select: {
+                                name: true,
+                                email: true,
+                                cnpj: true,
+                                legalName: true,
+                            },
                         },
-                    },
-                    employee: {
-                        select: {
-                            fullName: true,
-                            email: true,
-                            cpf: true,
+                        employee: {
+                            select: {
+                                fullName: true,
+                                email: true,
+                                cpf: true,
+                            },
                         },
-                    },
-                },
+                    }
+                    : undefined,
             });
-            return proposal;
+            return approveLoan
+                ? { success: true, data: proposal }
+                : {
+                    success: false,
+                    message: "Score de crédito do empregado insuficiente para aprovação do empréstimo",
+                };
         }
         catch (error) {
             if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
                 if (error.code === "P2002") {
                     const fields = error.meta?.target || [];
-                    const messages = fields.map((field) => `${field} already registered`);
+                    const messages = fields.map((field) => `${field} já registrado`);
                     throw new common_1.BadRequestException({
                         success: false,
                         message: messages.join(", "),
@@ -114,7 +156,7 @@ let ProposalService = class ProposalService {
             }
             throw new common_1.BadRequestException({
                 success: false,
-                message: error?.message ?? "Unexpected error while creating proposal",
+                message: error?.message ?? "Erro inesperado ao criar proposta",
             });
         }
     }

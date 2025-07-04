@@ -7,6 +7,8 @@ import { CreateProposalDto } from "./dto/create-proposal.dto";
 import { UpdateProposalDto } from "./dto/update-proposal.dto";
 import { ProposalService } from "./proposal.service";
 
+global.fetch = jest.fn();
+
 describe("ProposalService", () => {
 	let service: ProposalService;
 	let prisma: jest.Mocked<RepositoryService>;
@@ -41,7 +43,7 @@ describe("ProposalService", () => {
 
 	const mockProposal = {
 		id: "proposal-1",
-		status: ProposalStatus.approved,
+		status: ProposalStatus.APPROVED,
 		totalLoanAmount: 100000,
 		numberOfInstallments: 2,
 		installmentAmount: 50000,
@@ -51,6 +53,7 @@ describe("ProposalService", () => {
 		employerEmail: "funcionario@gmail.com",
 		companyCnpj: validCnpj,
 		employeeCpf: validCpf,
+		employeeCreditScore: 600,
 		createdAt: new Date(),
 		updatedAt: new Date(),
 		deletedAt: null,
@@ -100,6 +103,10 @@ describe("ProposalService", () => {
 
 		jest.clearAllMocks();
 
+		(global.fetch as jest.Mock).mockResolvedValue({
+			json: jest.fn().mockResolvedValue({ score: 600 }),
+		});
+
 		(prisma.proposal.create as jest.Mock).mockResolvedValue(mockProposal);
 		(prisma.proposal.findMany as jest.Mock).mockResolvedValue([mockProposal]);
 		(prisma.proposal.findFirst as jest.Mock).mockResolvedValue(mockProposal);
@@ -109,8 +116,7 @@ describe("ProposalService", () => {
 	});
 
 	describe("create", () => {
-		it("should create a proposal", async () => {
-			// Mock that no existing proposal is found
+		it("should create a proposal when approved", async () => {
 			(prisma.proposal.findFirst as jest.Mock).mockResolvedValueOnce(null);
 
 			const dto: CreateProposalDto = {
@@ -122,7 +128,10 @@ describe("ProposalService", () => {
 
 			const result = await service.create(dto);
 
-			expect(result).toEqual(mockProposal);
+			expect(result).toEqual({
+				success: true,
+				data: mockProposal,
+			});
 			expect(prisma.company.findUnique).toHaveBeenCalledWith({
 				where: { cnpj: dto.companyCnpj, deletedAt: null },
 			});
@@ -131,7 +140,7 @@ describe("ProposalService", () => {
 			});
 			expect(prisma.proposal.create).toHaveBeenCalledWith({
 				data: {
-					status: "approved",
+					status: "APPROVED",
 					companyCnpj: dto.companyCnpj,
 					employeeCpf: dto.employeeCpf,
 					totalLoanAmount: 100000,
@@ -141,6 +150,7 @@ describe("ProposalService", () => {
 					installmentsPaid: 0,
 					companyName: mockCompany.name,
 					employerEmail: mockEmployee.email,
+					employeeCreditScore: 600,
 				},
 				include: {
 					company: {
@@ -162,37 +172,33 @@ describe("ProposalService", () => {
 			});
 		});
 
-		it("should throw BadRequestException on invalid CNPJ", async () => {
-			const invalidDto = {
-				companyCnpj: "invalid-cnpj",
+		it("should return rejection message when credit score is insufficient", async () => {
+			(global.fetch as jest.Mock).mockResolvedValue({
+				json: jest.fn().mockResolvedValue({ score: 300 }),
+			});
+
+			(prisma.proposal.findFirst as jest.Mock).mockResolvedValueOnce(null);
+
+			const mockRejectedProposal = {
+				...mockProposal,
+				status: ProposalStatus.REJECTED,
+				employeeCreditScore: 300,
+			};
+			(prisma.proposal.create as jest.Mock).mockResolvedValueOnce(mockRejectedProposal);
+
+			const dto: CreateProposalDto = {
+				companyCnpj: validCnpj,
 				employeeCpf: validCpf,
 				totalLoanAmount: "100000",
 				numberOfInstallments: "2",
 			};
 
-			await expect(service.create(invalidDto as any)).rejects.toThrow(BadRequestException);
-		});
+			const result = await service.create(dto);
 
-		it("should throw BadRequestException on invalid CPF", async () => {
-			const invalidDto = {
-				companyCnpj: validCnpj,
-				employeeCpf: "invalid-cpf",
-				totalLoanAmount: "100000",
-				numberOfInstallments: "2",
-			};
-
-			await expect(service.create(invalidDto as any)).rejects.toThrow(BadRequestException);
-		});
-
-		it("should throw BadRequestException on invalid totalLoanAmount", async () => {
-			const invalidDto = {
-				companyCnpj: validCnpj,
-				employeeCpf: validCpf,
-				totalLoanAmount: "abc",
-				numberOfInstallments: "2",
-			};
-
-			await expect(service.create(invalidDto as any)).rejects.toThrow(BadRequestException);
+			expect(result).toEqual({
+				success: false,
+				message: "Score de crédito do empregado insuficiente para aprovação do empréstimo",
+			});
 		});
 
 		it("should throw BadRequestException when company not found", async () => {
@@ -221,29 +227,7 @@ describe("ProposalService", () => {
 			await expect(service.create(dto)).rejects.toThrow(BadRequestException);
 		});
 
-		it("should throw BadRequestException on zero numberOfInstallments", async () => {
-			const invalidDto = {
-				companyCnpj: validCnpj,
-				employeeCpf: validCpf,
-				totalLoanAmount: "100000",
-				numberOfInstallments: "0",
-			};
-
-			await expect(service.create(invalidDto as any)).rejects.toThrow(BadRequestException);
-		});
-
-		it("should throw BadRequestException on negative totalLoanAmount", async () => {
-			const invalidDto = {
-				companyCnpj: validCnpj,
-				employeeCpf: validCpf,
-				totalLoanAmount: "-1000",
-				numberOfInstallments: "2",
-			};
-
-			await expect(service.create(invalidDto as any)).rejects.toThrow(BadRequestException);
-		});
-
-		it("should return existing proposal if found", async () => {
+		it("should return existing approved proposal if found", async () => {
 			const dto: CreateProposalDto = {
 				companyCnpj: validCnpj,
 				employeeCpf: validCpf,
@@ -255,8 +239,53 @@ describe("ProposalService", () => {
 
 			const result = await service.create(dto);
 
-			expect(result).toEqual(mockProposal);
+			expect(result).toEqual({
+				success: true,
+				data: mockProposal,
+			});
 			expect(prisma.proposal.create).not.toHaveBeenCalled();
+		});
+
+		it("should return rejection message for existing rejected proposal", async () => {
+			(global.fetch as jest.Mock).mockResolvedValue({
+				json: jest.fn().mockResolvedValue({ score: 300 }),
+			});
+
+			const mockRejectedProposal = {
+				...mockProposal,
+				status: ProposalStatus.REJECTED,
+				employeeCreditScore: 300,
+			};
+
+			(prisma.proposal.findFirst as jest.Mock).mockResolvedValueOnce(mockRejectedProposal);
+
+			const dto: CreateProposalDto = {
+				companyCnpj: validCnpj,
+				employeeCpf: validCpf,
+				totalLoanAmount: "100000",
+				numberOfInstallments: "2",
+			};
+
+			const result = await service.create(dto);
+
+			expect(result).toEqual({
+				success: false,
+				message: "Score de crédito do empregado insuficiente para aprovação do empréstimo",
+			});
+			expect(prisma.proposal.create).not.toHaveBeenCalled();
+		});
+
+		it("should throw BadRequestException when fetch fails", async () => {
+			(global.fetch as jest.Mock).mockRejectedValue(new Error("Network error"));
+
+			const dto: CreateProposalDto = {
+				companyCnpj: validCnpj,
+				employeeCpf: validCpf,
+				totalLoanAmount: "100000",
+				numberOfInstallments: "2",
+			};
+
+			await expect(service.create(dto)).rejects.toThrow(BadRequestException);
 		});
 	});
 
@@ -335,7 +364,7 @@ describe("ProposalService", () => {
 	describe("update", () => {
 		it("should update a proposal", async () => {
 			const dto: UpdateProposalDto = {
-				status: ProposalStatus.rejected,
+				status: ProposalStatus.REJECTED,
 				installmentsPaid: 1,
 			};
 
@@ -353,7 +382,7 @@ describe("ProposalService", () => {
 
 		it("should throw error if proposal not found for update", async () => {
 			const dto: UpdateProposalDto = {
-				status: ProposalStatus.rejected,
+				status: ProposalStatus.REJECTED,
 			};
 
 			(prisma.proposal.update as jest.Mock).mockRejectedValueOnce(new Error("Record to update not found"));

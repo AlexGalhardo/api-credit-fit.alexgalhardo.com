@@ -41,15 +41,42 @@ describe("ProposalController", () => {
 				numberOfInstallments: 2,
 				installmentAmount: 50000,
 				firstDueDate: new Date(),
-				status: "approved",
+				status: "APPROVED",
 				companyName: "Empresa Ltda",
 				employerEmail: "funcionario@gmail.com",
 			};
 
-			mockProposalService.create.mockResolvedValue(createdProposal);
+			const serviceResponse = {
+				success: true,
+				data: createdProposal,
+			};
+
+			mockProposalService.create.mockResolvedValue(serviceResponse);
 
 			const response = await controller.create(dto);
-			expect(response).toEqual({ success: true, data: createdProposal });
+
+			expect(response).toEqual(serviceResponse);
+			expect(mockProposalService.create).toHaveBeenCalledWith(dto);
+		});
+
+		it("should return error response when proposal creation fails", async () => {
+			const dto = {
+				companyCnpj: "12.345.678/0001-00",
+				employeeCpf: "123.456.789-00",
+				totalLoanAmount: "100000",
+				numberOfInstallments: "2",
+			};
+
+			const serviceErrorResponse = {
+				success: false,
+				message: "Score de crédito do empregado insuficiente para aprovação do empréstimo",
+			};
+
+			mockProposalService.create.mockResolvedValue(serviceErrorResponse);
+
+			const response = await controller.create(dto);
+
+			expect(response).toEqual(serviceErrorResponse);
 			expect(mockProposalService.create).toHaveBeenCalledWith(dto);
 		});
 	});
@@ -80,13 +107,13 @@ describe("ProposalController", () => {
 
 	describe("update", () => {
 		it("should update a proposal", async () => {
-			const dto: Partial<{ status: "approved" | "rejected"; installmentsPaid: number }> = {
-				status: "rejected",
+			const dto: Partial<{ status: "APPROVED" | "REJECTED"; installmentsPaid: number }> = {
+				status: "REJECTED",
 				installmentsPaid: 1,
 			};
 			const updatedProposal = {
 				id: "proposal-1",
-				status: "rejected",
+				status: "REJECTED",
 				installmentsPaid: 1,
 			};
 

@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, ProposalStatus } from "@prisma/client";
 import { faker } from "@faker-js/faker";
 import { addDays } from "date-fns";
 
@@ -128,7 +128,7 @@ async function createSeedData() {
 
 		await prisma.proposal.create({
 			data: {
-				status: faker.helpers.arrayElement(["approved", "rejected"]),
+				status: faker.helpers.arrayElement([ProposalStatus.APPROVED, ProposalStatus.REJECTED]),
 				companyCnpj: company.cnpj,
 				employeeCpf: employee.cpf,
 				totalLoanAmount: amount,
@@ -138,6 +138,7 @@ async function createSeedData() {
 				installmentsPaid: 0,
 				companyName: company.name,
 				employerEmail: employee.email,
+				employeeCreditScore: 650,
 			},
 		});
 	}

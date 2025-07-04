@@ -19,7 +19,7 @@ class UpdateProposalDto {
 }
 exports.UpdateProposalDto = UpdateProposalDto;
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ enum: client_1.ProposalStatus, example: "approved" }),
+    (0, swagger_1.ApiPropertyOptional)({ enum: client_1.ProposalStatus, example: "APPROVED" }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(client_1.ProposalStatus),
     __metadata("design:type", String)

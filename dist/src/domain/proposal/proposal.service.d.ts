@@ -3,33 +3,32 @@ import { CreateProposalDto } from "./dto/create-proposal.dto";
 export declare class ProposalService {
     private readonly repository;
     constructor(repository: RepositoryService);
+    private verifyEmployeeCreditScore;
+    private verifyIfEmployeeCreditScoreIsEnoughToApproveLoan;
     create(dto: CreateProposalDto): Promise<{
-        company: {
-            name: string;
-            email: string;
-            cnpj: string;
-            legalName: string;
+        success: boolean;
+        message: string;
+        data?: undefined;
+    } | {
+        success: boolean;
+        data: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            deletedAt: Date | null;
+            status: string;
+            companyCnpj: string;
+            employeeCpf: string;
+            totalLoanAmount: number;
+            numberOfInstallments: number;
+            installmentAmount: number;
+            firstDueDate: Date;
+            installmentsPaid: number;
+            companyName: string;
+            employerEmail: string;
+            employeeCreditScore: number;
         };
-        employee: {
-            email: string;
-            cpf: string;
-            fullName: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        deletedAt: Date | null;
-        status: string;
-        companyCnpj: string;
-        employeeCpf: string;
-        totalLoanAmount: number;
-        numberOfInstallments: number;
-        installmentAmount: number;
-        firstDueDate: Date;
-        installmentsPaid: number;
-        companyName: string;
-        employerEmail: string;
+        message?: undefined;
     }>;
     findAll(): Promise<({
         company: {
@@ -62,6 +61,7 @@ export declare class ProposalService {
         installmentsPaid: number;
         companyName: string;
         employerEmail: string;
+        employeeCreditScore: number;
     })[]>;
     findOne(id: string): Promise<({
         company: {
@@ -94,9 +94,10 @@ export declare class ProposalService {
         installmentsPaid: number;
         companyName: string;
         employerEmail: string;
+        employeeCreditScore: number;
     }) | null>;
     update(id: string, dto: Partial<{
-        status: "approved" | "rejected";
+        status: "APPROVED" | "REJECTED";
         installmentsPaid: number;
     }>): Promise<{
         id: string;
@@ -113,6 +114,7 @@ export declare class ProposalService {
         installmentsPaid: number;
         companyName: string;
         employerEmail: string;
+        employeeCreditScore: number;
     }>;
     remove(id: string): Promise<{
         id: string;
@@ -129,5 +131,6 @@ export declare class ProposalService {
         installmentsPaid: number;
         companyName: string;
         employerEmail: string;
+        employeeCreditScore: number;
     }>;
 }

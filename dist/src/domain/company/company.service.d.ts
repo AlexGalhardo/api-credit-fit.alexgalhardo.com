@@ -31,6 +31,7 @@ export declare class CompanyService {
             installmentsPaid: number;
             companyName: string;
             employerEmail: string;
+            employeeCreditScore: number;
         }[];
         employees: {
             id: string;
@@ -71,6 +72,7 @@ export declare class CompanyService {
             installmentsPaid: number;
             companyName: string;
             employerEmail: string;
+            employeeCreditScore: number;
         }[];
         employees: {
             id: string;

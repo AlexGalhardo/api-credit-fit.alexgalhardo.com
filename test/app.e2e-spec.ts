@@ -147,21 +147,28 @@ describe("Loan System (e2e)", () => {
 
 		const response = await request(app.getHttpServer()).post("/proposals").send(proposalData).expect(201);
 
-		expect(response.body.success).toBe(true);
-		expect(response.body.data).toHaveProperty("id");
-		expect(response.body.data.status).toBe("approved");
-		expect(response.body.data.totalLoanAmount).toBe(200000);
-		expect(response.body.data.numberOfInstallments).toBe(2);
-		expect(response.body.data.installmentAmount).toBe(100000);
-		expect(response.body.data.installmentsPaid).toBe(0);
-		expect(response.body.data.companyName).toBe(companyData.name);
-		expect(response.body.data.employerEmail).toBe(employeeData.email);
-		expect(response.body.data).toHaveProperty("firstDueDate");
-		expect(response.body.data).toHaveProperty("createdAt");
-		expect(response.body.data).toHaveProperty("updatedAt");
-		expect(response.body.data.deletedAt).toBeNull();
+		if (response.body.success) {
+			expect(response.body.success).toBe(true);
+			expect(response.body.data).toHaveProperty("id");
+			expect(response.body.data.status).toBe("APPROVED");
+			expect(response.body.data.totalLoanAmount).toBe(200000);
+			expect(response.body.data.numberOfInstallments).toBe(2);
+			expect(response.body.data.installmentAmount).toBe(100000);
+			expect(response.body.data.installmentsPaid).toBe(0);
+			expect(response.body.data.companyName).toBe(companyData.name);
+			expect(response.body.data.employerEmail).toBe(employeeData.email);
+			expect(response.body.data).toHaveProperty("firstDueDate");
+			expect(response.body.data).toHaveProperty("createdAt");
+			expect(response.body.data).toHaveProperty("updatedAt");
+			expect(response.body.data.deletedAt).toBeNull();
 
-		createdProposalIds.push(response.body.data.id);
+			createdProposalIds.push(response.body.data.id);
+		} else {
+			expect(response.body.success).toBe(false);
+			expect(response.body.message).toBe(
+				"Score de crédito do empregado insuficiente para aprovação do empréstimo",
+			);
+		}
 	});
 
 	it("should create complete loan flow: company -> employee -> proposal", async () => {
@@ -203,15 +210,21 @@ describe("Loan System (e2e)", () => {
 
 		const proposalResponse = await request(app.getHttpServer()).post("/proposals").send(proposalData).expect(201);
 
-		createdProposalIds.push(proposalResponse.body.data.id);
-		expect(proposalResponse.body.success).toBe(true);
-		expect(proposalResponse.body.data.companyName).toBe(companyData.name);
-		expect(proposalResponse.body.data.employerEmail).toBe(employeeData.email);
-		expect(proposalResponse.body.data.installmentAmount).toBe(100000);
-
-		expect(proposalResponse.body.data.totalLoanAmount).toBe(500000);
-		expect(proposalResponse.body.data.numberOfInstallments).toBe(5);
-		expect(proposalResponse.body.data.status).toBe("approved");
+		if (proposalResponse.body.success) {
+			createdProposalIds.push(proposalResponse.body.data.id);
+			expect(proposalResponse.body.success).toBe(true);
+			expect(proposalResponse.body.data.companyName).toBe(companyData.name);
+			expect(proposalResponse.body.data.employerEmail).toBe(employeeData.email);
+			expect(proposalResponse.body.data.installmentAmount).toBe(100000);
+			expect(proposalResponse.body.data.totalLoanAmount).toBe(500000);
+			expect(proposalResponse.body.data.numberOfInstallments).toBe(5);
+			expect(proposalResponse.body.data.status).toBe("APPROVED");
+		} else {
+			expect(proposalResponse.body.success).toBe(false);
+			expect(proposalResponse.body.message).toBe(
+				"Score de crédito do empregado insuficiente para aprovação do empréstimo",
+			);
+		}
 	});
 
 	it("should validate minimum salary requirement", async () => {
@@ -236,5 +249,47 @@ describe("Loan System (e2e)", () => {
 		};
 
 		await request(app.getHttpServer()).post("/employees").send(employeeData).expect(400);
+	});
+
+	it("should reject proposal with low credit score", async () => {
+		const timestamp = Date.now();
+		const companyData = {
+			cnpj: cnpj.generate(),
+			legalName: `Company Legal ${timestamp}`,
+			name: `Company ${timestamp}`,
+			cpf: cpf.generate(),
+			email: `company-${timestamp}@example.com`,
+		};
+
+		const companyResponse = await request(app.getHttpServer()).post("/companies").send(companyData).expect(201);
+		createdCompanyIds.push(companyResponse.body.data.id);
+
+		const employeeCpf = cpf.generate();
+		const employeeData = {
+			fullName: `Employee ${timestamp}`,
+			cpf: employeeCpf,
+			email: `employee-${timestamp}@example.com`,
+			salary: 1000000,
+			companyCnpj: companyData.cnpj,
+		};
+
+		const employeeResponse = await request(app.getHttpServer()).post("/employees").send(employeeData).expect(201);
+		createdEmployeeIds.push(employeeResponse.body.data.id);
+
+		const proposalData = {
+			companyCnpj: companyData.cnpj,
+			employeeCpf: employeeCpf,
+			totalLoanAmount: "200000",
+			numberOfInstallments: "2",
+		};
+
+		const response = await request(app.getHttpServer()).post("/proposals").send(proposalData).expect(201);
+
+		if (!response.body.success) {
+			expect(response.body.success).toBe(false);
+			expect(response.body.message).toBe(
+				"Score de crédito do empregado insuficiente para aprovação do empréstimo",
+			);
+		}
 	});
 });

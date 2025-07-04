@@ -8,25 +8,26 @@ datasource db {
 }
 
 enum ProposalStatus {
-  approved
-  rejected
+  APPROVED
+  REJECTED
 }
 
 model Proposal {
-  id                   String    @id @default(cuid())
-  status               String
-  companyCnpj          String
-  employeeCpf          String
-  totalLoanAmount      Int
-  numberOfInstallments Int
-  installmentAmount    Int
-  firstDueDate         DateTime
-  installmentsPaid     Int
-  companyName          String
-  employerEmail        String
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
-  deletedAt            DateTime?
+  id                   String    @id @default(cuid()) @map("id")
+  status               String    @map("status")
+  companyCnpj          String    @map("company_cnpj")
+  employeeCpf          String    @map("employee_cpf")
+  totalLoanAmount      Int       @map("total_loan_amount")
+  numberOfInstallments Int       @map("number_of_installments")
+  installmentAmount    Int       @map("installment_amount")
+  firstDueDate         DateTime  @map("first_due_date")
+  installmentsPaid     Int       @map("installments_paid")
+  companyName          String    @map("company_name")
+  employerEmail        String    @map("employer_email")
+  employeeCreditScore  Int       @map("employee_credit_score")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+  deletedAt            DateTime? @map("deleted_at")
 
   company  Company  @relation(fields: [companyCnpj], references: [cnpj])
   employee Employee @relation(fields: [employeeCpf], references: [cpf])
@@ -37,15 +38,15 @@ model Proposal {
 }
 
 model Company {
-  id        String    @id @default(cuid())
-  name      String
-  email     String    @unique
-  cpf       String    @unique
-  cnpj      String    @unique
-  legalName String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id        String    @id @default(cuid()) @map("id")
+  name      String    @map("name")
+  email     String    @unique @map("email")
+  cpf       String    @unique @map("cpf")
+  cnpj      String    @unique @map("cnpj")
+  legalName String    @map("legal_name")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   proposals Proposal[]
   employees Employee[]
@@ -54,18 +55,18 @@ model Company {
 }
 
 model Employee {
-  id                String    @id @default(cuid())
-  fullName          String
-  email             String    @unique
-  cpf               String    @unique
-  salary            Int
-  currentlyEmployed Boolean   @default(true)
-  companyCnpj       String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  deletedAt         DateTime?
+  id                String    @id @default(cuid()) @map("id")
+  fullName          String    @map("full_name")
+  email             String    @unique @map("email")
+  cpf               String    @unique @map("cpf")
+  salary            Int       @map("salary")
+  currentlyEmployed Boolean   @default(true) @map("currently_employed")
+  companyCnpj       String?   @map("company_cnpj")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  deletedAt         DateTime? @map("deleted_at")
 
-  company   Company?    @relation(fields: [companyCnpj], references: [cnpj])
+  company   Company?   @relation(fields: [companyCnpj], references: [cnpj])
   proposals Proposal[]
 
   @@map("employees")

@@ -3,7 +3,7 @@ import { ProposalStatus } from "@prisma/client";
 import { IsEnum, IsNumber, IsOptional, Min } from "class-validator";
 
 export class UpdateProposalDto {
-	@ApiPropertyOptional({ enum: ProposalStatus, example: "approved" })
+	@ApiPropertyOptional({ enum: ProposalStatus, example: "APPROVED" })
 	@IsOptional()
 	@IsEnum(ProposalStatus)
 	status?: ProposalStatus;

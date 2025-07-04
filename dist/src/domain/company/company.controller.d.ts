@@ -37,6 +37,7 @@ export declare class CompanyController {
                 installmentsPaid: number;
                 companyName: string;
                 employerEmail: string;
+                employeeCreditScore: number;
             }[];
             employees: {
                 id: string;
@@ -80,6 +81,7 @@ export declare class CompanyController {
                 installmentsPaid: number;
                 companyName: string;
                 employerEmail: string;
+                employeeCreditScore: number;
             }[];
             employees: {
                 id: string;

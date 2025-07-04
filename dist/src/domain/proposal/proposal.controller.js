@@ -25,8 +25,7 @@ let ProposalController = class ProposalController {
     }
     async create(dto) {
         try {
-            const result = await this.proposalService.create(dto);
-            return { success: true, data: result };
+            return await this.proposalService.create(dto);
         }
         catch (error) {
             this.logger.error("Error creating proposal: ", (0, functions_1.getErrorStack)(error));

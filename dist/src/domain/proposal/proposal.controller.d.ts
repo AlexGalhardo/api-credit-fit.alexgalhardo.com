@@ -5,19 +5,11 @@ export declare class ProposalController {
     constructor(proposalService: ProposalService);
     create(dto: any): Promise<{
         success: boolean;
+        message: string;
+        data?: undefined;
+    } | {
+        success: boolean;
         data: {
-            company: {
-                name: string;
-                email: string;
-                cnpj: string;
-                legalName: string;
-            };
-            employee: {
-                email: string;
-                cpf: string;
-                fullName: string;
-            };
-        } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -32,7 +24,9 @@ export declare class ProposalController {
             installmentsPaid: number;
             companyName: string;
             employerEmail: string;
+            employeeCreditScore: number;
         };
+        message?: undefined;
     }>;
     findAll(): Promise<{
         success: boolean;
@@ -67,6 +61,7 @@ export declare class ProposalController {
             installmentsPaid: number;
             companyName: string;
             employerEmail: string;
+            employeeCreditScore: number;
         })[];
     }>;
     findOne(id: string): Promise<{
@@ -102,10 +97,11 @@ export declare class ProposalController {
             installmentsPaid: number;
             companyName: string;
             employerEmail: string;
+            employeeCreditScore: number;
         }) | null;
     }>;
     update(id: string, dto: Partial<{
-        status: "approved" | "rejected";
+        status: "APPROVED" | "REJECTED";
         installmentsPaid: number;
     }>): Promise<{
         success: boolean;
@@ -124,6 +120,7 @@ export declare class ProposalController {
             installmentsPaid: number;
             companyName: string;
             employerEmail: string;
+            employeeCreditScore: number;
         };
     }>;
     remove(id: string): Promise<{
@@ -143,6 +140,7 @@ export declare class ProposalController {
             installmentsPaid: number;
             companyName: string;
             employerEmail: string;
+            employeeCreditScore: number;
         };
     }>;
 }

@@ -12,8 +12,7 @@ export class ProposalController {
 	@Post()
 	async create(@Body() dto: any) {
 		try {
-			const result = await this.proposalService.create(dto);
-			return { success: true, data: result };
+			return await this.proposalService.create(dto);
 		} catch (error: unknown) {
 			this.logger.error("Error creating proposal: ", getErrorStack(error));
 			throw new BadRequestException({
@@ -54,7 +53,7 @@ export class ProposalController {
 	@Put(":id")
 	async update(
 		@Param("id") id: string,
-		@Body() dto: Partial<{ status: "approved" | "rejected"; installmentsPaid: number }>,
+		@Body() dto: Partial<{ status: "APPROVED" | "REJECTED"; installmentsPaid: number }>,
 	) {
 		try {
 			const result = await this.proposalService.update(id, dto);
