@@ -14,14 +14,14 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmployeeController = void 0;
 const common_1 = require("@nestjs/common");
-const customer_logger_1 = require("../../utils/customer-logger");
+const custom_logger_1 = require("../../utils/custom-logger");
 const functions_1 = require("../../utils/functions");
 const create_employee_dto_1 = require("./dto/create-employee.dto");
 const update_employee_dto_1 = require("./dto/update-employee.dto");
 const employee_service_1 = require("./employee.service");
 let EmployeeController = class EmployeeController {
     employeeService;
-    logger = new customer_logger_1.CustomLogger();
+    logger = new custom_logger_1.CustomLogger();
     constructor(employeeService) {
         this.employeeService = employeeService;
     }

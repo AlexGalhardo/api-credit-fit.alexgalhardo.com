@@ -4,7 +4,7 @@ export declare class AppController {
     private readonly appService;
     private readonly logger;
     constructor(appService: AppService);
-    getDashboard(): Promise<{
+    index(): Promise<{
         success: boolean;
     }>;
     login(dto: LoginDto): Promise<{

@@ -14,6 +14,7 @@ CREATE TABLE "proposals" (
     "installments_paid" INTEGER NOT NULL,
     "company_name" TEXT NOT NULL,
     "employer_email" TEXT NOT NULL,
+    "employee_credit_score" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "deleted_at" TIMESTAMP(3),
@@ -39,7 +40,6 @@ CREATE TABLE "companies" (
 -- CreateTable
 CREATE TABLE "employees" (
     "id" TEXT NOT NULL,
-    "credit_score" INTEGER NOT NULL DEFAULT 0,
     "full_name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "cpf" TEXT NOT NULL,

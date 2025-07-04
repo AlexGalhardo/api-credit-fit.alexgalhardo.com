@@ -4,16 +4,20 @@ const core_1 = require("@nestjs/core");
 const swagger_1 = require("@nestjs/swagger");
 const helmet_1 = require("helmet");
 const app_module_1 = require("./app.module");
-const customer_logger_1 = require("./utils/customer-logger");
+const custom_logger_1 = require("./utils/custom-logger");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule, {
-        logger: new customer_logger_1.CustomLogger(),
+        logger: new custom_logger_1.CustomLogger(),
     });
     app.enableCors({
         origin: "*",
     });
     app.use((0, helmet_1.default)());
-    const config = new swagger_1.DocumentBuilder().setTitle("Credit-Fit Nestjs API").setDescription("").setVersion("1.0").build();
+    const config = new swagger_1.DocumentBuilder()
+        .setTitle("Credit Fit API Documentation")
+        .setDescription("")
+        .setVersion("1.0")
+        .build();
     const document = swagger_1.SwaggerModule.createDocument(app, config);
     swagger_1.SwaggerModule.setup("api-docs", app, document);
     await app.listen(process.env.PORT ?? 3000);

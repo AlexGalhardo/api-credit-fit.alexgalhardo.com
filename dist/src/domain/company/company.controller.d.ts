@@ -8,8 +8,8 @@ export declare class CompanyController {
     create(dto: CreateCompanyDto): Promise<{
         success: boolean;
         data: {
-            id: string;
             name: string;
+            id: string;
             email: string;
             cpf: string;
             cnpj: string;
@@ -27,8 +27,8 @@ export declare class CompanyController {
                 createdAt: Date;
                 updatedAt: Date;
                 deletedAt: Date | null;
-                status: string;
                 companyCnpj: string;
+                status: string;
                 employeeCpf: string;
                 totalLoanAmount: number;
                 numberOfInstallments: number;
@@ -46,14 +46,14 @@ export declare class CompanyController {
                 createdAt: Date;
                 updatedAt: Date;
                 deletedAt: Date | null;
-                companyCnpj: string | null;
                 fullName: string;
                 salary: number;
                 currentlyEmployed: boolean;
+                companyCnpj: string | null;
             }[];
         } & {
-            id: string;
             name: string;
+            id: string;
             email: string;
             cpf: string;
             cnpj: string;
@@ -71,8 +71,8 @@ export declare class CompanyController {
                 createdAt: Date;
                 updatedAt: Date;
                 deletedAt: Date | null;
-                status: string;
                 companyCnpj: string;
+                status: string;
                 employeeCpf: string;
                 totalLoanAmount: number;
                 numberOfInstallments: number;
@@ -90,14 +90,14 @@ export declare class CompanyController {
                 createdAt: Date;
                 updatedAt: Date;
                 deletedAt: Date | null;
-                companyCnpj: string | null;
                 fullName: string;
                 salary: number;
                 currentlyEmployed: boolean;
+                companyCnpj: string | null;
             }[];
         } & {
-            id: string;
             name: string;
+            id: string;
             email: string;
             cpf: string;
             cnpj: string;
@@ -110,8 +110,8 @@ export declare class CompanyController {
     update(id: string, dto: UpdateCompanyDto): Promise<{
         success: boolean;
         data: {
-            id: string;
             name: string;
+            id: string;
             email: string;
             cpf: string;
             cnpj: string;
@@ -124,8 +124,8 @@ export declare class CompanyController {
     remove(id: string): Promise<{
         success: boolean;
         data: {
-            id: string;
             name: string;
+            id: string;
             email: string;
             cpf: string;
             cnpj: string;

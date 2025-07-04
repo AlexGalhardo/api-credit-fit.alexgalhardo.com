@@ -66,4 +66,4 @@ class CustomLogger {
     }
 }
 exports.CustomLogger = CustomLogger;
-//# sourceMappingURL=customer-logger.js.map
+//# sourceMappingURL=custom-logger.js.map

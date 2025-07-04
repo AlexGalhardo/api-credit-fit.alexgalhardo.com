@@ -13,8 +13,8 @@ sudo docker rm $(sudo docker ps -aq) 2>/dev/null || echo "No containers to remov
 # echo "🧽 Pruning Docker system..."
 # sudo docker system prune -af --volumes
 
+
 echo "⬇️  Stopping docker-compose services..."
 sudo docker-compose down --volumes --remove-orphans
-
 echo "🔨 Building and starting services..."
-sudo docker-compose up --build
+sudo docker-compose up --build -d

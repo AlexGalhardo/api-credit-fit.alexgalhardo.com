@@ -122,8 +122,8 @@ describe("ProposalService", () => {
 			const dto: CreateProposalDto = {
 				companyCnpj: validCnpj,
 				employeeCpf: validCpf,
-				totalLoanAmount: "100000",
-				numberOfInstallments: "2",
+				totalLoanAmount: 100000,
+				numberOfInstallments: 2,
 			};
 
 			const result = await service.create(dto);
@@ -140,7 +140,7 @@ describe("ProposalService", () => {
 			});
 			expect(prisma.proposal.create).toHaveBeenCalledWith({
 				data: {
-					status: "APPROVED",
+					status: ProposalStatus.APPROVED,
 					companyCnpj: dto.companyCnpj,
 					employeeCpf: dto.employeeCpf,
 					totalLoanAmount: 100000,
@@ -189,8 +189,8 @@ describe("ProposalService", () => {
 			const dto: CreateProposalDto = {
 				companyCnpj: validCnpj,
 				employeeCpf: validCpf,
-				totalLoanAmount: "100000",
-				numberOfInstallments: "2",
+				totalLoanAmount: 100000,
+				numberOfInstallments: 2,
 			};
 
 			const result = await service.create(dto);
@@ -207,8 +207,8 @@ describe("ProposalService", () => {
 			const dto: CreateProposalDto = {
 				companyCnpj: cnpj.generate(),
 				employeeCpf: validCpf,
-				totalLoanAmount: "100000",
-				numberOfInstallments: "2",
+				totalLoanAmount: 100000,
+				numberOfInstallments: 2,
 			};
 
 			await expect(service.create(dto)).rejects.toThrow(BadRequestException);
@@ -220,8 +220,8 @@ describe("ProposalService", () => {
 			const dto: CreateProposalDto = {
 				companyCnpj: validCnpj,
 				employeeCpf: cpf.generate(),
-				totalLoanAmount: "100000",
-				numberOfInstallments: "2",
+				totalLoanAmount: 100000,
+				numberOfInstallments: 2,
 			};
 
 			await expect(service.create(dto)).rejects.toThrow(BadRequestException);
@@ -231,8 +231,8 @@ describe("ProposalService", () => {
 			const dto: CreateProposalDto = {
 				companyCnpj: validCnpj,
 				employeeCpf: validCpf,
-				totalLoanAmount: "100000",
-				numberOfInstallments: "2",
+				totalLoanAmount: 100000,
+				numberOfInstallments: 2,
 			};
 
 			(prisma.proposal.findFirst as jest.Mock).mockResolvedValueOnce(mockProposal);
@@ -262,8 +262,8 @@ describe("ProposalService", () => {
 			const dto: CreateProposalDto = {
 				companyCnpj: validCnpj,
 				employeeCpf: validCpf,
-				totalLoanAmount: "100000",
-				numberOfInstallments: "2",
+				totalLoanAmount: 100000,
+				numberOfInstallments: 2,
 			};
 
 			const result = await service.create(dto);
@@ -281,8 +281,8 @@ describe("ProposalService", () => {
 			const dto: CreateProposalDto = {
 				companyCnpj: validCnpj,
 				employeeCpf: validCpf,
-				totalLoanAmount: "100000",
-				numberOfInstallments: "2",
+				totalLoanAmount: 100000,
+				numberOfInstallments: 2,
 			};
 
 			await expect(service.create(dto)).rejects.toThrow(BadRequestException);

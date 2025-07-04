@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Get, Post } from "@nestjs/common";
 import { AppService } from "./app.service";
-import { CustomLogger } from "./utils/customer-logger";
+import { CustomLogger } from "./utils/custom-logger";
 import { getErrorMessage, getErrorStack } from "./utils/functions";
 import { LoginDto } from "./dtos/login.dto";
 
@@ -11,11 +11,11 @@ export class AppController {
 	constructor(private readonly appService: AppService) {}
 
 	@Get("/")
-	async getDashboard() {
+	async index() {
 		try {
 			return await this.appService.index();
 		} catch (error: unknown) {
-			this.logger.error("Error fetching dashboard", getErrorStack(error));
+			this.logger.error("Error fetching index", getErrorStack(error));
 			throw new BadRequestException({
 				success: false,
 				error: getErrorMessage(error) || "Unknown error while fetching dashboard",

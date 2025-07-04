@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put } from "@nestjs/common";
-import { CustomLogger } from "../../utils/customer-logger";
+import { CustomLogger } from "../../utils/custom-logger";
 import { getErrorMessage, getErrorStack } from "../../utils/functions";
 import { CreateEmployeeDto } from "./dto/create-employee.dto";
 import { UpdateEmployeeDto } from "./dto/update-employee.dto";

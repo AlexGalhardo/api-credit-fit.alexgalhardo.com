@@ -41,18 +41,18 @@ __decorate([
 ], CreateProposalDto.prototype, "employeeCpf", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        example: "100000",
-        description: "Total loan amount in cents (min: 100000, max: 2000000)",
+        example: 100000,
+        description: "Total loan amount in cents (min: 100000, max: 1200000)",
     }),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
 ], CreateProposalDto.prototype, "totalLoanAmount", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        example: "4",
-        description: "Number of installments (1 to 10)",
+        example: 4,
+        description: "Number of installments (1 to 4)",
     }),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
 ], CreateProposalDto.prototype, "numberOfInstallments", void 0);
 //# sourceMappingURL=create-proposal.dto.js.map

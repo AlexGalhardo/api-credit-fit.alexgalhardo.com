@@ -2,7 +2,7 @@ import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import helmet from "helmet";
 import { AppModule } from "./app.module";
-import { CustomLogger } from "./utils/customer-logger";
+import { CustomLogger } from "./utils/custom-logger";
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule, {
@@ -15,7 +15,11 @@ async function bootstrap() {
 
 	app.use(helmet());
 
-	const config = new DocumentBuilder().setTitle("Credit-Fit Nestjs API").setDescription("").setVersion("1.0").build();
+	const config = new DocumentBuilder()
+		.setTitle("Credit Fit API Documentation")
+		.setDescription("")
+		.setVersion("1.0")
+		.build();
 
 	const document = SwaggerModule.createDocument(app, config);
 	SwaggerModule.setup("api-docs", app, document);

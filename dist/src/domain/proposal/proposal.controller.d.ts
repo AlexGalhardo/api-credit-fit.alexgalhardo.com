@@ -14,8 +14,8 @@ export declare class ProposalController {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
-            status: string;
             companyCnpj: string;
+            status: string;
             employeeCpf: string;
             totalLoanAmount: number;
             numberOfInstallments: number;
@@ -32,8 +32,8 @@ export declare class ProposalController {
         success: boolean;
         data: ({
             company: {
-                id: string;
                 name: string;
+                id: string;
                 email: string;
                 cnpj: string;
                 legalName: string;
@@ -51,8 +51,8 @@ export declare class ProposalController {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
-            status: string;
             companyCnpj: string;
+            status: string;
             employeeCpf: string;
             totalLoanAmount: number;
             numberOfInstallments: number;
@@ -68,8 +68,8 @@ export declare class ProposalController {
         success: boolean;
         data: ({
             company: {
-                id: string;
                 name: string;
+                id: string;
                 email: string;
                 cnpj: string;
                 legalName: string;
@@ -87,8 +87,8 @@ export declare class ProposalController {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
-            status: string;
             companyCnpj: string;
+            status: string;
             employeeCpf: string;
             totalLoanAmount: number;
             numberOfInstallments: number;
@@ -110,8 +110,8 @@ export declare class ProposalController {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
-            status: string;
             companyCnpj: string;
+            status: string;
             employeeCpf: string;
             totalLoanAmount: number;
             numberOfInstallments: number;
@@ -130,8 +130,8 @@ export declare class ProposalController {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
-            status: string;
             companyCnpj: string;
+            status: string;
             employeeCpf: string;
             totalLoanAmount: number;
             numberOfInstallments: number;

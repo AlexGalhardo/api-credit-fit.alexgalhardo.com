@@ -141,8 +141,8 @@ describe("Loan System (e2e)", () => {
 		const proposalData = {
 			companyCnpj: companyData.cnpj,
 			employeeCpf: employeeCpf,
-			totalLoanAmount: "200000",
-			numberOfInstallments: "2",
+			totalLoanAmount: 200000,
+			numberOfInstallments: 2,
 		};
 
 		const response = await request(app.getHttpServer()).post("/proposals").send(proposalData).expect(201);
@@ -204,8 +204,8 @@ describe("Loan System (e2e)", () => {
 		const proposalData = {
 			companyCnpj: companyData.cnpj,
 			employeeCpf: employeeCpf,
-			totalLoanAmount: "500000",
-			numberOfInstallments: "5",
+			totalLoanAmount: 500000,
+			numberOfInstallments: 4,
 		};
 
 		const proposalResponse = await request(app.getHttpServer()).post("/proposals").send(proposalData).expect(201);
@@ -217,7 +217,7 @@ describe("Loan System (e2e)", () => {
 			expect(proposalResponse.body.data.employerEmail).toBe(employeeData.email);
 			expect(proposalResponse.body.data.installmentAmount).toBe(100000);
 			expect(proposalResponse.body.data.totalLoanAmount).toBe(500000);
-			expect(proposalResponse.body.data.numberOfInstallments).toBe(5);
+			expect(proposalResponse.body.data.numberOfInstallments).toBe(4);
 			expect(proposalResponse.body.data.status).toBe("APPROVED");
 		} else {
 			expect(proposalResponse.body.success).toBe(false);
@@ -279,8 +279,8 @@ describe("Loan System (e2e)", () => {
 		const proposalData = {
 			companyCnpj: companyData.cnpj,
 			employeeCpf: employeeCpf,
-			totalLoanAmount: "200000",
-			numberOfInstallments: "2",
+			totalLoanAmount: 200000,
+			numberOfInstallments: 2,
 		};
 
 		const response = await request(app.getHttpServer()).post("/proposals").send(proposalData).expect(201);

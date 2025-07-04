@@ -8,15 +8,15 @@ export declare const updateEmployeeSchema: import("zod").ZodObject<{
 }, "strip", import("zod").ZodTypeAny, {
     email?: string | undefined;
     cpf?: string | undefined;
-    companyCnpj?: string | undefined;
     fullName?: string | undefined;
     salary?: number | undefined;
     currentlyEmployed?: boolean | undefined;
+    companyCnpj?: string | undefined;
 }, {
     email?: string | undefined;
     cpf?: string | undefined;
-    companyCnpj?: string | undefined;
     fullName?: string | undefined;
     salary?: number | undefined;
     currentlyEmployed?: boolean | undefined;
+    companyCnpj?: string | undefined;
 }>;

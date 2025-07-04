@@ -31,8 +31,8 @@ describe("ProposalController", () => {
 			const dto = {
 				companyCnpj: "12.345.678/0001-00",
 				employeeCpf: "123.456.789-00",
-				totalLoanAmount: "100000",
-				numberOfInstallments: "2",
+				totalLoanAmount: 100000,
+				numberOfInstallments: 2,
 			};
 
 			const createdProposal = {
@@ -63,8 +63,8 @@ describe("ProposalController", () => {
 			const dto = {
 				companyCnpj: "12.345.678/0001-00",
 				employeeCpf: "123.456.789-00",
-				totalLoanAmount: "100000",
-				numberOfInstallments: "2",
+				totalLoanAmount: 100000,
+				numberOfInstallments: 2,
 			};
 
 			const serviceErrorResponse = {

@@ -5,8 +5,8 @@ export declare class CompanyService {
     private readonly repository;
     constructor(repository: RepositoryService);
     create(dto: CreateCompanyDto): Promise<{
-        id: string;
         name: string;
+        id: string;
         email: string;
         cpf: string;
         cnpj: string;
@@ -21,8 +21,8 @@ export declare class CompanyService {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
-            status: string;
             companyCnpj: string;
+            status: string;
             employeeCpf: string;
             totalLoanAmount: number;
             numberOfInstallments: number;
@@ -40,14 +40,14 @@ export declare class CompanyService {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
-            companyCnpj: string | null;
             fullName: string;
             salary: number;
             currentlyEmployed: boolean;
+            companyCnpj: string | null;
         }[];
     } & {
-        id: string;
         name: string;
+        id: string;
         email: string;
         cpf: string;
         cnpj: string;
@@ -62,8 +62,8 @@ export declare class CompanyService {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
-            status: string;
             companyCnpj: string;
+            status: string;
             employeeCpf: string;
             totalLoanAmount: number;
             numberOfInstallments: number;
@@ -81,14 +81,14 @@ export declare class CompanyService {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
-            companyCnpj: string | null;
             fullName: string;
             salary: number;
             currentlyEmployed: boolean;
+            companyCnpj: string | null;
         }[];
     } & {
-        id: string;
         name: string;
+        id: string;
         email: string;
         cpf: string;
         cnpj: string;
@@ -98,8 +98,8 @@ export declare class CompanyService {
         deletedAt: Date | null;
     }>;
     update(id: string, dto: UpdateCompanyDto): Promise<{
-        id: string;
         name: string;
+        id: string;
         email: string;
         cpf: string;
         cnpj: string;
@@ -109,8 +109,8 @@ export declare class CompanyService {
         deletedAt: Date | null;
     }>;
     remove(id: string): Promise<{
-        id: string;
         name: string;
+        id: string;
         email: string;
         cpf: string;
         cnpj: string;

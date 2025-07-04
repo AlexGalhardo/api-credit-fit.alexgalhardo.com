@@ -11,15 +11,15 @@ export declare class EmployeeService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        companyCnpj: string | null;
         fullName: string;
         salary: number;
         currentlyEmployed: boolean;
+        companyCnpj: string | null;
     }>;
     findAll(): Promise<({
         company: {
-            id: string;
             name: string;
+            id: string;
             email: string;
             cnpj: string;
             legalName: string;
@@ -41,15 +41,15 @@ export declare class EmployeeService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        companyCnpj: string | null;
         fullName: string;
         salary: number;
         currentlyEmployed: boolean;
+        companyCnpj: string | null;
     })[]>;
     findOne(id: string): Promise<{
         company: {
-            id: string;
             name: string;
+            id: string;
             email: string;
             cnpj: string;
             legalName: string;
@@ -71,10 +71,10 @@ export declare class EmployeeService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        companyCnpj: string | null;
         fullName: string;
         salary: number;
         currentlyEmployed: boolean;
+        companyCnpj: string | null;
     }>;
     update(id: string, dto: UpdateEmployeeDto): Promise<{
         id: string;
@@ -83,10 +83,10 @@ export declare class EmployeeService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        companyCnpj: string | null;
         fullName: string;
         salary: number;
         currentlyEmployed: boolean;
+        companyCnpj: string | null;
     }>;
     remove(id: string): Promise<{
         id: string;
@@ -95,9 +95,9 @@ export declare class EmployeeService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        companyCnpj: string | null;
         fullName: string;
         salary: number;
         currentlyEmployed: boolean;
+        companyCnpj: string | null;
     }>;
 }

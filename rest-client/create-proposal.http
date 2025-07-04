@@ -4,6 +4,6 @@ content-type: application/json
 {
     "companyCnpj": "84207733000191",
     "employeeCpf": "52522513630",
-    "totalLoanAmount": "100000",
-    "numberOfInstallments": "1"
+    "totalLoanAmount": 100000,
+    "numberOfInstallments": 2
 }

@@ -15,21 +15,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppController = void 0;
 const common_1 = require("@nestjs/common");
 const app_service_1 = require("./app.service");
-const customer_logger_1 = require("./utils/customer-logger");
+const custom_logger_1 = require("./utils/custom-logger");
 const functions_1 = require("./utils/functions");
 const login_dto_1 = require("./dtos/login.dto");
 let AppController = class AppController {
     appService;
-    logger = new customer_logger_1.CustomLogger();
+    logger = new custom_logger_1.CustomLogger();
     constructor(appService) {
         this.appService = appService;
     }
-    async getDashboard() {
+    async index() {
         try {
             return await this.appService.index();
         }
         catch (error) {
-            this.logger.error("Error fetching dashboard", (0, functions_1.getErrorStack)(error));
+            this.logger.error("Error fetching index", (0, functions_1.getErrorStack)(error));
             throw new common_1.BadRequestException({
                 success: false,
                 error: (0, functions_1.getErrorMessage)(error) || "Unknown error while fetching dashboard",
@@ -58,7 +58,7 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
-], AppController.prototype, "getDashboard", null);
+], AppController.prototype, "index", null);
 __decorate([
     (0, common_1.Post)("/login"),
     __param(0, (0, common_1.Body)()),

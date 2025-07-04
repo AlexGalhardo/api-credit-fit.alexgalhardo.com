@@ -18,8 +18,8 @@ export declare const createEmployeeSchema: z.ZodEffects<z.ZodObject<{
     cpf: string;
     fullName: string;
     salary: number;
-    companyCnpj?: string | undefined;
     currentlyEmployed?: boolean | undefined;
+    companyCnpj?: string | undefined;
 }>, {
     email: string;
     cpf: string;
@@ -32,6 +32,6 @@ export declare const createEmployeeSchema: z.ZodEffects<z.ZodObject<{
     cpf: string;
     fullName: string;
     salary: number;
-    companyCnpj?: string | undefined;
     currentlyEmployed?: boolean | undefined;
+    companyCnpj?: string | undefined;
 }>;

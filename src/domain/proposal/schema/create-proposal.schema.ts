@@ -10,18 +10,10 @@ export const createProposalSchema = z.object({
 		.string()
 		.min(1, { message: "CPF is required" })
 		.refine((value) => cpf.isValid(value), { message: "Invalid CPF" }),
-	totalLoanAmount: z
-		.string()
-		.refine((val) => !Number.isNaN(Number(val)), { message: "totalLoanAmount must be a number" })
-		.transform((val) => Number(val))
-		.refine((val) => val >= 100000 && val <= 1200000, {
-			message: "totalLoanAmount must be between 100000 and 1200000",
-		}),
-	numberOfInstallments: z
-		.string()
-		.refine((val) => !Number.isNaN(Number(val)), { message: "numberOfInstallments must be a number" })
-		.transform((val) => Number(val))
-		.refine((val) => val >= 1 && val <= 10, {
-			message: "numberOfInstallments must be between 1 and 10",
-		}),
+	totalLoanAmount: z.number().refine((val) => val >= 100000 && val <= 1200000, {
+		message: "totalLoanAmount must be between 100000 and 1200000",
+	}),
+	numberOfInstallments: z.number().refine((val) => val >= 1 && val <= 4, {
+		message: "numberOfInstallments must be between 1 and 4",
+	}),
 });
